@@ -1,0 +1,16 @@
+# Descartar arquivos locais do Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Arquivos de variáveis sensíveis (onde ficam senhas e chaves)
+*.tfvars
+*.tfvars.json
+
+# Arquivos temporários do sistema
+.DS_Store
+.env
+
+# arquivos pytest
+.pytest_cache/
