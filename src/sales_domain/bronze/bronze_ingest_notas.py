@@ -3,6 +3,7 @@
 # [tool.databricks.environment]
 # environment_version = "5"
 # ///
+# DBTITLE 1,Cell 1
 from pyspark.sql import functions as F
 from pyspark.sql.types import StructType, StructField, StringType, LongType, IntegerType, DoubleType, DateType
 import random
@@ -10,8 +11,8 @@ from datetime import datetime, timedelta
 
 # Simulação de dados
 num_notas = 1000
-estados = ["SP", "RJ", "PR", "SC", "RS", "MG", "BA"]
-cfops = [5102, 6102, 5405, 6405]
+estados = ["SP", "RJ", "PR", "SC", "RS", "MG", "BA", "GO", "ES", "MA", "PE", "CE", "PA", "AM", "TO", "AC", "DF", "MT", "MS", "PI", "RN", "AL", "PB", "PE", "SE", "AP", "RO", "RR"]
+cfops = [1202, 2202, 5101, 5102, 6101, 6102, 5405, 6405]
 categorias_marketing = ["Eletrônicos", "Eletrodomésticos", "Vestuário", "Alimentos", "Cosmeticos"]
 
 notas_cabecalho = []
@@ -44,13 +45,13 @@ current_user = spark.sql("SELECT current_user()").collect()[0][0]
 
 df_cabecalho_bronze = (df_cabecalho_raw
     .withColumn("dh_insercao_bronze", F.current_timestamp())
-    .withColumn("nome_arquivo_origem", lit("MOCK_DATA_MEMORY"))
+    .withColumn("nome_arquivo_origem", F.lit("MOCK_DATA_MEMORY"))
     .withColumn("usuario_executor", F.lit(current_user))
 )
 
 df_itens_bronze = (df_itens_raw
     .withColumn("dh_insercao_bronze", F.current_timestamp())
-    .withColumn("nome_arquivo_origem", lit("MOCK_DATA_MEMORY"))
+    .withColumn("nome_arquivo_origem", F.lit("MOCK_DATA_MEMORY"))
     .withColumn("usuario_executor", F.lit(current_user))
 )
 
