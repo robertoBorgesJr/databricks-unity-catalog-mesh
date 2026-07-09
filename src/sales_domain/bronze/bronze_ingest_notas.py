@@ -3,6 +3,7 @@
 # [tool.databricks.environment]
 # environment_version = "5"
 # ///
+# DBTITLE 1,Cell 1
 from pyspark.sql import functions as F
 from pyspark.sql.types import StructType, StructField, StringType, LongType, IntegerType, DoubleType, DateType
 import random
@@ -10,16 +11,19 @@ from datetime import datetime, timedelta
 
 # Simulação de dados
 num_notas = 1000
-estados = ["SP", "RJ", "PR", "SC", "RS", "MG", "BA"]
-cfops = [5102, 6102, 5405, 6405]
+estados = ["SP", "RJ", "PR", "SC", "RS", "MG", "BA", "GO", "ES", "MA", "PE", "CE", "PA", "AM", "TO", "AC", "DF", "MT", "MS", "PI", "RN", "AL", "PB", "PE", "SE", "AP", "RO", "RR"]
+cfops = [1202, 2202, 5101, 5102, 6101, 6102, 5405, 6405]
 categorias_marketing = ["Eletrônicos", "Eletrodomésticos", "Vestuário", "Alimentos", "Cosmeticos"]
+
+minuto_atual = datetime.now().minute
+semente_nova = (minuto_atual * 100)
 
 notas_cabecalho = []
 itens_nota = []
 start_date = datetime(2026, 1, 1)
 
 for i in range(1, num_notas + 1):
-    numero_nota = 20260000 + i
+    numero_nota = 20260000 + minuto_atual + i
     chave_acesso = f"4126070000000000000055001000{numero_nota}123456789"
     data_emissao = start_date + timedelta(days=random.randint(0, 180))
     cliente_id = f"CLI_{random.randint(100, 999)}"
@@ -44,18 +48,18 @@ current_user = spark.sql("SELECT current_user()").collect()[0][0]
 
 df_cabecalho_bronze = (df_cabecalho_raw
     .withColumn("dh_insercao_bronze", F.current_timestamp())
-    .withColumn("nome_arquivo_origem", lit("MOCK_DATA_MEMORY"))
+    .withColumn("nome_arquivo_origem", F.lit("MOCK_DATA_MEMORY"))
     .withColumn("usuario_executor", F.lit(current_user))
 )
 
 df_itens_bronze = (df_itens_raw
     .withColumn("dh_insercao_bronze", F.current_timestamp())
-    .withColumn("nome_arquivo_origem", lit("MOCK_DATA_MEMORY"))
+    .withColumn("nome_arquivo_origem", F.lit("MOCK_DATA_MEMORY"))
     .withColumn("usuario_executor", F.lit(current_user))
 )
 
 # Persistência na camada Bronze
-df_cabecalho_bronze.write.format("delta").mode("overwrite").saveAsTable("sales_prod.bronze.faturamento_nota_cabecalho")
-df_itens_bronze.write.format("delta").mode("overwrite").saveAsTable("sales_prod.bronze.faturamento_nota_itens")
+df_cabecalho_bronze.write.format("delta").mode("append").saveAsTable("sales_prod.bronze.faturamento_nota_cabecalho")
+df_itens_bronze.write.format("delta").mode("append").saveAsTable("sales_prod.bronze.faturamento_nota_itens")
 
 print("Camada Bronze carregada com sucesso!")
