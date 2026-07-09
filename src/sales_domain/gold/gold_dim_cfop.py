@@ -5,129 +5,103 @@
 # ///
 # DBTITLE 1,Cell 1
 from pyspark.sql import functions as F
-from pyspark.sql.types import IntegerType
+from pyspark.sql.types import IntegerType, StringType, BooleanType, TimestampType
 
-# 1. Capturar todos os CFOPs que já transacionaram na camada Silver
-df_silver_cfop = (
-    spark.read.table("sales_prod.silver.faturamento_nota_cabecalho")
-    .select("cfop")
-    .distinct()
-    .filter(F.col("cfop").isNotNull())
+# ==============================================================================
+# 1. PARAMETRIZAÇÃO E LEITURA
+# ==============================================================================
+
+# Caminho do Volume Gerenciado no Unity Catalog
+path_csv_cfop = "/Volumes/sales_prod/gold/arquivos_setup/Tabela_CFOP.csv"
+tabela_destino = "sales_prod.gold.dim_cfop"
+
+# Leitura do arquivo bruto
+# Nota: Ajuste o "sep" caso seu arquivo utilize vírgula ao invés de ponto e vírgula
+df_raw = (spark.read
+    .format("csv")
+    .option("header", "true")
+    .option("sep", ";")
+    .option("encoding", "ISO-8859-1")
+    .load(path_csv_cfop)
 )
 
-# 2. Processamento de Regras Fiscais Brasileiras Baseadas em Intervalos Numéricos
-df_dim_cfop = (
-    df_silver_cfop
-    .withColumn("cfop_codigo", F.col("cfop").cast(IntegerType()))
-    # Surrogate Key estável para o Star Schema
-    .withColumn("sk_cfop", F.md5(F.col("cfop_codigo").cast("string")))
+# ==============================================================================
+# 2. MAPEAMENTO DE REGRAS E TRANSFORMAÇÕES (Camada Gold)
+# ==============================================================================
+
+# Assumindo que o CSV original possui colunas parecidas com: 'codigo', 'descricao'
+# Ajuste os nomes de origem ('codigo', 'descricao') conforme o cabeçalho real do seu CSV
+df_transformed = (df_raw
+    # 2.1. Seleção, renomeação e tipagem básica das colunas originais
+    .withColumn("cfop_codigo", F.regexp_replace(F.col("CFOP"), '[^0-9]', '').cast(IntegerType()))
+    .withColumn("cfop_nome_amigavel", F.col("DescricaoResumida").cast(StringType()))
     
-    # --- 1. ESCOPO TERRITORIAL (Baseado no 1º dígito) ---
+    # 2.2. Determinação de Entrada vs Saída com base no primeiro dígito do CFOP
+    # 1, 2, 3 = Entrada | 5, 6, 7 = Saída
+    .withColumn("is_entrada", F.substring(F.col("CFOP").cast(StringType()), 1, 1).isin(["1", "2", "3"]))
+    .withColumn("is_saida", F.substring(F.col("CFOP").cast(StringType()), 1, 1).isin(["5", "6", "7"]))
+    
+    # 2.3. Determinação do Escopo (Estadual, Interestadual, Exterior)
     .withColumn("cfop_escopo", 
-        F.when(F.col("cfop_codigo").between(1000, 1999), "Entrada - Estadual")
-         .when(F.col("cfop_codigo").between(2000, 2999), "Entrada - Interestadual")
-         .when(F.col("cfop_codigo").between(3000, 3999), "Entrada - Exterior")
-         .when(F.col("cfop_codigo").between(5000, 5999), "Saída - Estadual")
-         .when(F.col("cfop_codigo").between(6000, 6999), "Saída - Interestadual")
-         .when(F.col("cfop_codigo").between(7000, 7999), "Saída - Exterior")
-         .otherwise("Não Identificado")
+        F.when(F.substring(F.col("CFOP").cast(StringType()), 1, 1).isin(["1", "5"]), F.lit("Estadual"))
+         .when(F.substring(F.col("CFOP").cast(StringType()), 1, 1).isin(["2", "6"]), F.lit("Interestadual"))
+         .when(F.substring(F.col("CFOP").cast(StringType()), 1, 1).isin(["3", "7"]), F.lit("Exterior"))
+         .otherwise(F.lit("Desconhecido"))
     )
     
-    # --- 2. NATUREZA DA OPERAÇÃO (Grupos Oficiais de Negócio) ---
-    .withColumn("cfop_natureza",
-        # Grupo de Vendas Ativas e Prestações de Serviço que geram Receita Bruta
-        F.when(
-            F.col("cfop_codigo").between(5100, 5199) | F.col("cfop_codigo").between(6100, 6199) | F.col("cfop_codigo").between(7100, 7199) |
-            F.col("cfop_codigo").between(5250, 5259) | F.col("cfop_codigo").between(6250, 6259) |
-            F.col("cfop_codigo").between(5300, 5307) | F.col("cfop_codigo").between(6300, 6307), 
-            "Venda / Prestação de Serviço"
-        )
-        # Grupo de Devoluções de Vendas (Anulações de Receita que afetam o Faturamento Líquido)
-        .when(
-            F.col("cfop_codigo").between(1200, 1299) | F.col("cfop_codigo").between(2200, 2299) | F.col("cfop_codigo").between(3200, 3299),
-            "Devolução de Venda"
-        )
-        # Grupo de Compras (Entradas de estoque / Ativo Imobilizado / Consumo)
-        .when(
-            F.col("cfop_codigo").between(1100, 1199) | F.col("cfop_codigo").between(2100, 2199) | F.col("cfop_codigo").between(3100, 3199) |
-            F.col("cfop_codigo").between(1400, 1449) | F.col("cfop_codigo").between(2400, 2449) |
-            F.col("cfop_codigo").between(1550, 1559) | F.col("cfop_codigo").between(2550, 2559),
-            "Compra / Aquisição"
-        )
-        # Grupo de Remessas Logísticas (Conserto, Demonstração, Depósito - Não geram receita)
-        .when(
-            F.col("cfop_codigo").between(5900, 5949) | F.col("cfop_codigo").between(6900, 6949) | F.col("cfop_codigo").between(7900, 7949),
-            "Remessa Logística"
-        )
-        # Grupo de Retornos Logísticos
-        .when(
-            F.col("cfop_codigo").between(1900, 1949) | F.col("cfop_codigo").between(2900, 2949) | F.col("cfop_codigo").between(3900, 3949),
-            "Retorno Logístico"
-        )
-        .otherwise("Outras Movimentações")
+    # 2.4. Natureza Genérica (Exemplo: Venda, Devolução, Transferência)
+    # Geralmente mapeada por substrings ou listas de CFOPs específicos da SEFAZ
+    .withColumn("cfop_natureza", 
+        F.when(F.col("cfop_codigo").isin([5101, 5102, 6101, 6102]), F.lit("Venda de Mercadoria"))
+         .when(F.col("cfop_codigo").isin([1201, 1202, 5201, 5202]), F.lit("Devolução de Venda/Compra"))
+         .when(F.col("cfop_codigo").isin([5151, 5152, 6151, 6152]), F.lit("Transferência"))
+         .otherwise(F.lit("Outras Operações"))
     )
     
-    # --- 3. INDICADORES ANALÍTICOS (Essenciais para BI e Métricas de Finanças) ---
-    # Is_Faturamento_Bruto: Registra se a operação representa uma saída de venda original
+    # 2.5. Regras de Negócio de FinOps / Controladoria (Faturamento Bruto, Líquido e Deduções)
+    # Substitua as listas abaixo pelos códigos reais que sua empresa considera para cada indicador
     .withColumn("is_faturamento_bruto", 
-        F.col("cfop_natureza") == "Venda / Prestação de Serviço"
+        F.when(F.col("cfop_codigo").isin([5101, 5102, 6101, 6102]), F.lit(True)).otherwise(F.lit(False))
     )
-    # Is_Deducao_Faturamento: Sinaliza o que deve abater o faturamento (Devoluções)
     .withColumn("is_deducao_faturamento", 
-        F.col("cfop_natureza") == "Devolução de Venda"
+        F.when(F.col("cfop_codigo").isin([1201, 1202, 2201, 2202]), F.lit(True)).otherwise(F.lit(False))
     )
-    # Is_Faturamento_Liquido: O que de fato entra no cálculo de receita final líquida
     .withColumn("is_faturamento_liquido", 
-        (F.col("cfop_natureza") == "Venda / Prestação de Serviço") & 
-        (~F.col("cfop_codigo").isin(5910, 6910, 5911, 6911)) # Remove CFOPs de Bonificação/Brinde se aplicável
+        # Faturamento Líquido costuma ser (Bruto = True) AND (Dedução = False)
+        F.when((F.col("is_faturamento_bruto") == True) & (F.col("is_deducao_faturamento") == False), F.lit(True)).otherwise(F.lit(False))
     )
     
-    # --- 4. INDICADORES DE SENTIDO DA OPERAÇÃO ---
-    .withColumn("is_entrada",
-        F.col("cfop_codigo").between(1000, 3999)
-    )
-    .withColumn("is_saida",
-        F.col("cfop_codigo").between(5000, 7999)
-    )
-
-    # --- 5. TEXTOS DESCRITIVOS DOS MAIS COMUNS (Fallbacks para legibilidade) ---
-    .withColumn("cfop_nome_amigavel",
-        F.when(F.col("cfop_codigo") == 5101, "Venda de Produção do Estabelecimento (Interna)")
-         .when(F.col("cfop_codigo") == 5102, "Venda de Mercadoria de Terceiros (Interna)")
-         .when(F.col("cfop_codigo") == 5405, "Vendas dentro do mesmo estado (operação interna)")
-         .when(F.col("cfop_codigo") == 6101, "Venda de Produção do Estabelecimento (Interestadual)")
-         .when(F.col("cfop_codigo") == 6102, "Venda de Mercadoria de Terceiros (Interestadual)")
-         .when(F.col("cfop_codigo") == 6405, "Vendas para outros estados (operação interestadual)")
-         .when(F.col("cfop_codigo") == 1202, "Devolução de Venda de Mercadoria de Terceiros (Interna)")
-         .when(F.col("cfop_codigo") == 2202, "Devolução de Venda de Mercadoria de Terceiros (Interestadual)")
-         .when(F.col("cfop_codigo") == 1901, "Retorno de Mercadoria para o Estabelecimento (Interna)")
-         .when(F.col("cfop_codigo") == 2901, "Retorno de Mercadoria para o Estabelecimento (Interestadual)")
-         .when(F.col("cfop_codigo") == 1904, "Retorno de Mercadoria para o Estabelecimento após Remessa para Industrialização (Interna)")
-         .when(F.col("cfop_codigo") == 2904, "Retorno de Mercadoria para o Estabelecimento após Remessa para Industrialização (Interestadual)")
-         .when(F.col("cfop_codigo") == 1910, "Retorno de Mercadoria para o Estabelecimento após Remessa para Venda Fora do Estabelecimento (Interna)")
-         .when(F.col("cfop_codigo") == 2910, "Retorno de Mercadoria para o Estabelecimento após Remessa para Venda Fora do Estabelecimento (Interestadual)")
-         .otherwise(F.concat(F.lit("CFOP "), F.col("cfop_codigo").cast("string")))
-    )
-    
-    # Auditoria
+    # 2.6. Auditoria e Linhagem de Dados
     .withColumn("dh_processamento_gold", F.current_timestamp())
-    .select(
-        "cfop_codigo", "cfop_nome_amigavel", 
-        "cfop_natureza", "cfop_escopo", 
-        "is_faturamento_bruto", "is_deducao_faturamento", "is_faturamento_liquido",
-        "is_entrada", "is_saida",
-        "dh_processamento_gold"
-    )
 )
 
-# 3. Escrita na Gold via Overwrite (Garante sincronismo automático com novos códigos da Silver)
-(
-    df_dim_cfop.write
+# ==============================================================================
+# 3. SELEÇÃO FINAL E HIGIENIZAÇÃO DO SCHEMA
+# ==============================================================================
+df_final = df_transformed.select(
+    "cfop_codigo",
+    "cfop_nome_amigavel",
+    "cfop_natureza",
+    "cfop_escopo",
+    "is_faturamento_bruto",
+    "is_deducao_faturamento",
+    "is_faturamento_liquido",
+    "is_entrada",
+    "is_saida",
+    "dh_processamento_gold"
+)
+
+# ==============================================================================
+# 4. ESCRITA ACELERADA NA TABELA DELTA (UNITY CATALOG)
+# ==============================================================================
+# Como o volume de dados é extremamente baixo e atualizações são raras, 
+# o modo 'overwrite' limpa a tabela e reinsere o espelho ideal sem gerar overhead.
+
+(df_final.write
     .format("delta")
     .mode("overwrite")
-    .option("mergeSchema", "true")
-    .saveAsTable("sales_prod.gold.dim_cfop")
+    .option("overwriteSchema", "true") # Garante a aplicação do schema exato da Gold
+    .saveAsTable(tabela_destino)
 )
 
-# 4. Otimização física
-spark.sql("OPTIMIZE sales_prod.gold.dim_cfop ZORDER BY (cfop_codigo)")
+print(f"Carga da tabela {tabela_destino} realizada com sucesso!")

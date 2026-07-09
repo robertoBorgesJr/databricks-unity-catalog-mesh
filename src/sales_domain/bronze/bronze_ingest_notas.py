@@ -15,12 +15,15 @@ estados = ["SP", "RJ", "PR", "SC", "RS", "MG", "BA", "GO", "ES", "MA", "PE", "CE
 cfops = [1202, 2202, 5101, 5102, 6101, 6102, 5405, 6405]
 categorias_marketing = ["Eletrônicos", "Eletrodomésticos", "Vestuário", "Alimentos", "Cosmeticos"]
 
+minuto_atual = datetime.now().minute
+semente_nova = (minuto_atual * 100)
+
 notas_cabecalho = []
 itens_nota = []
 start_date = datetime(2026, 1, 1)
 
 for i in range(1, num_notas + 1):
-    numero_nota = 20260000 + i
+    numero_nota = 20260000 + minuto_atual + i
     chave_acesso = f"4126070000000000000055001000{numero_nota}123456789"
     data_emissao = start_date + timedelta(days=random.randint(0, 180))
     cliente_id = f"CLI_{random.randint(100, 999)}"
@@ -56,7 +59,7 @@ df_itens_bronze = (df_itens_raw
 )
 
 # Persistência na camada Bronze
-df_cabecalho_bronze.write.format("delta").mode("overwrite").saveAsTable("sales_prod.bronze.faturamento_nota_cabecalho")
-df_itens_bronze.write.format("delta").mode("overwrite").saveAsTable("sales_prod.bronze.faturamento_nota_itens")
+df_cabecalho_bronze.write.format("delta").mode("append").saveAsTable("sales_prod.bronze.faturamento_nota_cabecalho")
+df_itens_bronze.write.format("delta").mode("append").saveAsTable("sales_prod.bronze.faturamento_nota_itens")
 
 print("Camada Bronze carregada com sucesso!")
