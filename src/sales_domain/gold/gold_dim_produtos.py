@@ -37,12 +37,9 @@ df_dim_produtos = (
     df_dim_produtos.write
     .format("delta")
     .mode("overwrite")
+    .clusterby("sk_produto", "categoria_produto")
     .option("mergeSchema", "true")
     .saveAsTable("sales_prod.gold.dim_produtos")
 )
-
-# Otimização física (Z-Ordering)
-# Otimizamos pela SK e categoria para acelerar os Joins que o BI fará na Fato
-spark.sql("OPTIMIZE sales_prod.gold.dim_produtos ZORDER BY (sk_produto, categoria_produto)")
 
 print("Dimensão de Produtos gerada e otimizada com sucesso na Gold!")
