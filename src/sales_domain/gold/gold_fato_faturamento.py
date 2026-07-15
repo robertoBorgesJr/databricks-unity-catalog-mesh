@@ -115,13 +115,9 @@ else:
         .format("delta")
         .mode("overwrite")
         .option("mergeSchema", "true")
+        .clusterby("sk_tempo", "sk_produto", "sk_cliente)
         .saveAsTable(GOLD_TABLE)
     )
     print("Carga inicial completa executada com sucesso.")
 
-# --- [7. OTIMIZAÇÃO AVANÇADA (Z-ORDERING)] ---
-spark.sql(f"""
-    OPTIMIZE {GOLD_TABLE}
-    ZORDER BY (sk_tempo, sk_produto, sk_cliente)
-""")
 print("Tabela Fato (fato_faturamento) gerada, auditada e otimizada com sucesso na Gold!")

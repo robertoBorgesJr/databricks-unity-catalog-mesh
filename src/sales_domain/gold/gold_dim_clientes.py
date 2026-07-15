@@ -45,12 +45,9 @@ df_dim_clientes = (
     df_dim_clientes.write
     .format("delta")
     .mode("overwrite")
+    .clusterBy("sk_cliente", "uf_cliente")
     .option("mergeSchema", "true")
     .saveAsTable("sales_prod.gold.dim_clientes")
 )
-
-# 3. OTIMIZAÇÃO FÍSICA (Z-ORDERING)
-# Otimizamos pela SK e uf para acelerar os Joins que o BI fará na Fato
-spark.sql("OPTIMIZE sales_prod.gold.dim_clientes ZORDER BY (sk_cliente, uf_cliente)")
 
 print("Dimensão de Clientes gerada e otimizada com sucesso na Gold!")

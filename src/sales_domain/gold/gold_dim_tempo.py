@@ -74,11 +74,9 @@ df_dim_tempo = (
     df_dim_tempo.write
     .format("delta")
     .mode("overwrite")
+    .clusterby("ano", "mes")
     .option("mergeSchema", "true")
     .saveAsTable("sales_prod.gold.dim_tempo")
 )
-
-# 5. Otimização Física de Leitura
-spark.sql("OPTIMIZE sales_prod.gold.dim_tempo ZORDER BY (ano, mes)")
 
 print("Dimensão de Tempo gerada com sucesso na Gold!")
