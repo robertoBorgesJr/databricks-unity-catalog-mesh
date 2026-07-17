@@ -15,6 +15,9 @@
 # arquivos pytest
 .pytest_cache/
 
+# arquivos sandbox
+sandbox/
+
 # ignorar arquivos de cache e definições de utilizador do Power BI
 *.pbi
 *.user
