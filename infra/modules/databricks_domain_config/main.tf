@@ -88,3 +88,11 @@ resource "databricks_schema" "gold" {
   catalog_name = databricks_catalog.domain_catalog.name
   name         = "gold"
 }
+
+# Schema separado para metadados operacionais dos pipelines (ex: controle de
+# watermark incremental), fora das camadas de negocio do medallion architecture.
+resource "databricks_schema" "controle" {
+  catalog_name = databricks_catalog.domain_catalog.name
+  name         = "controle"
+  comment      = "Metadados operacionais dos pipelines (ex: watermark_pipelines) - nao e dado de negocio"
+}
