@@ -37,7 +37,7 @@ df_dim_produtos = (
     df_dim_produtos.write
     .format("delta")
     .mode("overwrite")
-    .clusterBy("sk_produto", "categoria_produto")
+    .clusterby("sk_produto", "categoria_produto")
     .option("mergeSchema", "true")
     .saveAsTable("sales_prod.gold.dim_produtos")
 )

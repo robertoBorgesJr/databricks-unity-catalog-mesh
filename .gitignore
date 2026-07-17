@@ -17,3 +17,14 @@
 
 # arquivos sandbox
 sandbox/
+
+# ignorar arquivos de cache e definições de utilizador do Power BI
+*.pbi
+*.user
+.pbi/
+
+# ignorar arquivos de cache de dados local (evita enviar dados reais para o git) 
+**/cache.dat
+
+# caso utilize alguma ligação local a teste por arquivo que não queira subir
+*.log

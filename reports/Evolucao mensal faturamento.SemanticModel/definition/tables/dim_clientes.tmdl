@@ -1,0 +1,107 @@
+table dim_clientes
+	lineageTag: 54647ddb-9cda-45f9-88d7-1b8d0d281b28
+
+	column sk_cliente
+		dataType: string
+		lineageTag: b18a3590-5bb6-4098-958e-a90e32671dfe
+		summarizeBy: none
+		sourceColumn: sk_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column cliente_id
+		dataType: string
+		lineageTag: 04adacb6-6519-4975-b242-4a1e9ee95a40
+		summarizeBy: none
+		sourceColumn: cliente_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column cliente_nome
+		dataType: string
+		lineageTag: cea3b4a8-65ed-4f59-8f43-99fcda0d09d9
+		summarizeBy: none
+		sourceColumn: cliente_nome
+
+		annotation SummarizationSetBy = Automatic
+
+	column cliente_tipo
+		dataType: string
+		lineageTag: 3faa64d2-9787-4ccb-b82b-7124d5d5dfa3
+		summarizeBy: none
+		sourceColumn: cliente_tipo
+
+		annotation SummarizationSetBy = Automatic
+
+	column cliente_documento
+		dataType: string
+		lineageTag: 1c86cfc5-58d7-4c78-8e1f-1449b05af3d6
+		summarizeBy: none
+		sourceColumn: cliente_documento
+
+		annotation SummarizationSetBy = Automatic
+
+	column uf_cliente
+		dataType: string
+		lineageTag: b2553c0d-9d4f-448a-9ca5-c2559c9c92ee
+		summarizeBy: none
+		sourceColumn: uf_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column regiao_cliente
+		dataType: string
+		lineageTag: 12641ec5-4182-41bf-a697-4144c6d9ffd2
+		summarizeBy: none
+		sourceColumn: regiao_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column dh_processamento_gold
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: c90203d3-f34c-4d1b-84c4-4ddeddd0b691
+		summarizeBy: none
+		sourceColumn: dh_processamento_gold
+
+		variation Variation
+			isDefault
+			relationship: fce953b5-956c-4432-9a0c-09e957b9dc4d
+			defaultHierarchy: LocalDateTable_06cf01d2-86c6-467c-a617-f830308813a7.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column usuario_executor
+		dataType: string
+		lineageTag: 245a1242-880f-4134-ad9d-261a6e028712
+		summarizeBy: none
+		sourceColumn: usuario_executor
+
+		annotation SummarizationSetBy = Automatic
+
+	column Segmento_Cliente = ```
+			
+			IF(
+			    dim_clientes[cliente_tipo] = "PJ" || LEN(dim_clientes[cliente_documento]) > 11, 
+			    "Corporativo (B2B)", 
+			    "Consumidor Final (B2C)"
+			)
+			```
+		lineageTag: 0e34c607-9f95-4ac6-8afc-ec858610bf52
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_clientes = m
+		mode: import
+		source =
+				let
+				    Fonte = Databricks.Catalogs("adb-7405612202710045.5.azuredatabricks.net", "/sql/1.0/warehouses/ef38fcac5564a917", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    sales_prod_Database = Fonte{[Name="sales_prod",Kind="Database"]}[Data],
+				    gold_Schema = sales_prod_Database{[Name="gold",Kind="Schema"]}[Data],
+				    dim_clientes_Table = gold_Schema{[Name="dim_clientes",Kind="Table"]}[Data]
+				in
+				    dim_clientes_Table
+
+	annotation PBI_ResultType = Table
+
