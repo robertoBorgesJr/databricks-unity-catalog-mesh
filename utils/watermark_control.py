@@ -42,6 +42,16 @@ from delta.tables import DeltaTable
 DATA_WATERMARK_PADRAO = "1900-01-01"
 CTRL_WATERMARK_PIPELINES_PADRAO = "marketing_prod.controle.watermark_pipelines"
 
+def _normalizar_watermark(valor):
+    """
+    Garante que o watermark seja sempre armazenado como timestamp na tabela de controle
+    """
+    if isinstance(valor, datetime):
+        return valor
+    if isinstance(valor, date):
+        return datetime.combine(valor, datetime.min.time())
+    return valor
+
 def get_watermark(
     spark: SparkSession,
     nome_pipeline: str,
@@ -83,7 +93,7 @@ def update_watermark(
     """
     df_watermark = (
         spark.createDataFrame(
-            [(nome_pipeline, novo_watermark)],
+            [(nome_pipeline, _normalizar_watermark(novo_watermark))],
             ["nome_pipeline", "data_maxima_processada"],
         )
         .withColumns({
