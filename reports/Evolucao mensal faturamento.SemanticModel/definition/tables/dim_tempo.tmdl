@@ -1,0 +1,140 @@
+table dim_tempo
+	lineageTag: c6feed51-9029-4c07-b51d-37d22b971044
+	dataCategory: Time
+
+	column data
+		dataType: dateTime
+		isKey
+		formatString: Long Date
+		lineageTag: 0038710e-2339-4e44-99d0-9917b57c64c5
+		summarizeBy: none
+		sourceColumn: data
+		sortByColumn: mes
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column sk_tempo
+		dataType: int64
+		formatString: 0
+		lineageTag: ed258056-64f9-4a7a-8367-cfcec8363230
+		summarizeBy: none
+		sourceColumn: sk_tempo
+
+		annotation SummarizationSetBy = Automatic
+
+	column ano
+		dataType: int64
+		formatString: 0
+		lineageTag: 153fc654-b52b-4cdf-9564-2f82b8e9663e
+		summarizeBy: sum
+		sourceColumn: ano
+
+		annotation SummarizationSetBy = Automatic
+
+	column mes
+		dataType: int64
+		formatString: 0
+		lineageTag: 034f197f-391a-4238-9ef3-777ad61f753c
+		summarizeBy: sum
+		sourceColumn: mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column dia
+		dataType: int64
+		formatString: 0
+		lineageTag: fc49e24e-6620-497e-8b51-c361b8414070
+		summarizeBy: sum
+		sourceColumn: dia
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_mes
+		dataType: string
+		lineageTag: 6546ecf0-4f70-413f-947a-5de2eddc4c55
+		summarizeBy: none
+		sourceColumn: nome_mes
+		sortByColumn: mes
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_mes_curto
+		dataType: string
+		lineageTag: af79477b-a917-479f-a938-a2933ad2ee3b
+		summarizeBy: none
+		sourceColumn: nome_mes_curto
+
+		annotation SummarizationSetBy = Automatic
+
+	column trimestre
+		dataType: int64
+		formatString: 0
+		lineageTag: a66aa732-e0b3-4de5-93ef-220d9020f217
+		summarizeBy: sum
+		sourceColumn: trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column semana_ano
+		dataType: int64
+		formatString: 0
+		lineageTag: 826da825-317a-4a07-877b-b3e6d8301b72
+		summarizeBy: sum
+		sourceColumn: semana_ano
+
+		annotation SummarizationSetBy = Automatic
+
+	column dia_semana_num
+		dataType: int64
+		formatString: 0
+		lineageTag: 07fce010-5508-4bbe-a4d6-4967649a2dee
+		summarizeBy: sum
+		sourceColumn: dia_semana_num
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_dia_semana
+		dataType: string
+		lineageTag: 4891a09d-e854-4ab8-a70c-fb363587d0e1
+		summarizeBy: none
+		sourceColumn: nome_dia_semana
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_final_semana
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 88f46504-0c35-4cea-9f96-bd370ea5c276
+		summarizeBy: none
+		sourceColumn: is_final_semana
+
+		annotation SummarizationSetBy = Automatic
+
+	column dh_processamento_gold
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 96d47aa3-cf52-4cf7-be81-030559c5b970
+		summarizeBy: none
+		sourceColumn: dh_processamento_gold
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_tempo = m
+		mode: import
+		source =
+				let
+				    Fonte = Databricks.Catalogs("adb-7405612202710045.5.azuredatabricks.net", "/sql/1.0/warehouses/ef38fcac5564a917", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    sales_prod_Database = Fonte{[Name="sales_prod",Kind="Database"]}[Data],
+				    gold_Schema = sales_prod_Database{[Name="gold",Kind="Schema"]}[Data],
+				    dim_tempo_Table = gold_Schema{[Name="dim_tempo",Kind="Table"]}[Data]
+				in
+				    dim_tempo_Table
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "64d8a308a02cf995e619",
+  "position": {
+    "x": 22.522315853192474,
+    "y": 52.62089810627846,
+    "z": 1000,
+    "height": 201.22269116186698,
+    "width": 262.78750566432973,
+    "tabOrder": 6000
+  },
+  "visualGroup": {
+    "displayName": "Grupo_Periodo",
+    "groupMode": "ScaleMode",
+    "objects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#F8F8F8'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "parentGroupName": "ebd60acc5c27210a5688"
+}

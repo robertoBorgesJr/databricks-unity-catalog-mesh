@@ -1,0 +1,28 @@
+model Model
+	culture: pt-BR
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: pt-BR
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["fato_faturamento","dim_tempo","dim_produtos","dim_clientes","dim_cfop"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table fato_faturamento
+ref table DateTableTemplate_b04ff999-745d-4b0f-9f0b-248dd9f4d146
+ref table LocalDateTable_837eb216-a1d9-4ecb-a6d6-dd2d0562e83d
+ref table LocalDateTable_43c953f8-1c0b-490a-a5f3-b5f2db64fe49
+ref table dim_tempo
+ref table dim_produtos
+ref table LocalDateTable_5842d4bf-eee8-4589-a73b-a13c9a8374d9
+ref table dim_clientes
+ref table LocalDateTable_06cf01d2-86c6-467c-a617-f830308813a7
+ref table dim_cfop
+ref table LocalDateTable_9c14d399-f5a0-4b40-b9b6-ccb6afd1b614
+
+ref cultureInfo pt-BR
+

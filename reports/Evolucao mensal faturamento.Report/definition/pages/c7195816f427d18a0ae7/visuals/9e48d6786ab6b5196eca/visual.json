@@ -1,0 +1,43 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "9e48d6786ab6b5196eca",
+  "position": {
+    "x": 312,
+    "y": 53.400619303183163,
+    "z": 2000,
+    "height": 199.23038728897717,
+    "width": 276.2051024885601,
+    "tabOrder": 2000
+  },
+  "visualGroup": {
+    "displayName": "Grupo_Tipo_Mercado",
+    "groupMode": "ScaleMode",
+    "objects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#F8F8F8'"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "parentGroupName": "ebd60acc5c27210a5688"
+}

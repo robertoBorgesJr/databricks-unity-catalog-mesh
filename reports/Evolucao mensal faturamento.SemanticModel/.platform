@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Evolucao mensal faturamento"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "f1f6186c-7a63-4b22-b033-308203720b62"
+  }
+}

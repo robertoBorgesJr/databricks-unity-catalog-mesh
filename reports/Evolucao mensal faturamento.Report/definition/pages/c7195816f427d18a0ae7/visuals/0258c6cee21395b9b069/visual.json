@@ -1,0 +1,32 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "0258c6cee21395b9b069",
+  "position": {
+    "x": 312,
+    "y": 258.72670747144014,
+    "z": 4000,
+    "height": 207.07485231139728,
+    "width": 279.24528301886795,
+    "tabOrder": 4000
+  },
+  "visualGroup": {
+    "displayName": "Grupo Produto",
+    "groupMode": "ScaleMode",
+    "objects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "parentGroupName": "ebd60acc5c27210a5688"
+}

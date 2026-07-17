@@ -1,0 +1,70 @@
+table dim_produtos
+	lineageTag: cd1139fd-5853-4343-87d1-3753fea59087
+
+	column sk_produto
+		dataType: string
+		lineageTag: c1a2e2c2-bbcf-407e-8167-81ae859ece94
+		summarizeBy: none
+		sourceColumn: sk_produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column produto_id
+		dataType: string
+		lineageTag: 4280300b-89ae-41fb-b06e-0d6d7aa87934
+		summarizeBy: none
+		sourceColumn: produto_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_limpo_produto
+		dataType: string
+		lineageTag: cdb49227-91ff-4208-881d-16437e47c56a
+		summarizeBy: none
+		sourceColumn: nome_limpo_produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column categoria_produto
+		dataType: string
+		lineageTag: 3ec03534-fa2f-44dc-bfb0-1e07160314e6
+		summarizeBy: none
+		sourceColumn: categoria_produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column dh_processamento_gold
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 25f480ed-8b66-4bad-a968-ed16bc5e4f5f
+		summarizeBy: none
+		sourceColumn: dh_processamento_gold
+
+		variation Variation
+			isDefault
+			relationship: 533a3133-c0ab-435f-8637-9d8264229f8c
+			defaultHierarchy: LocalDateTable_5842d4bf-eee8-4589-a73b-a13c9a8374d9.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column usuario_executor
+		dataType: string
+		lineageTag: 4cc50109-c792-4836-9643-8f71c8baaf9b
+		summarizeBy: none
+		sourceColumn: usuario_executor
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_produtos = m
+		mode: import
+		source =
+				let
+				    Fonte = Databricks.Catalogs("adb-7405612202710045.5.azuredatabricks.net", "/sql/1.0/warehouses/ef38fcac5564a917", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    sales_prod_Database = Fonte{[Name="sales_prod",Kind="Database"]}[Data],
+				    gold_Schema = sales_prod_Database{[Name="gold",Kind="Schema"]}[Data],
+				    dim_produtos_Table = gold_Schema{[Name="dim_produtos",Kind="Table"]}[Data]
+				in
+				    dim_produtos_Table
+
+	annotation PBI_ResultType = Table
+

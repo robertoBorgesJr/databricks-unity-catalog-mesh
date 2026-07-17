@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Evolucao mensal faturamento"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "8baca786-6b59-4ad9-98b1-14856b8914b8"
+  }
+}
