@@ -1,0 +1,179 @@
+table fato_faturamento
+	lineageTag: 809c63c4-d724-4b5f-b3ad-9cd949248b61
+
+	measure 'Quantidade Vendida Liquida' =
+			
+			CALCULATE(
+			    SUM(fato_faturamento[quantidade]),
+			    dim_cfop[is_deducao_faturamento] = FALSE()
+			    )
+		formatString: 0
+		lineageTag: e8b1fb82-8d0d-4a5c-981c-1cb488d1ed0c
+
+	column sk_produto
+		dataType: string
+		lineageTag: 2c8da226-ebd5-48a6-8515-24d5fa47f0bd
+		summarizeBy: none
+		sourceColumn: sk_produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_cliente
+		dataType: string
+		lineageTag: a1ce7dba-27f5-4fc5-b223-62d2e75b607c
+		summarizeBy: none
+		sourceColumn: sk_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_tempo
+		dataType: int64
+		formatString: 0
+		lineageTag: 8fed0488-f63a-4122-ac0d-abb8fcaa2dc6
+		summarizeBy: none
+		sourceColumn: sk_tempo
+
+		annotation SummarizationSetBy = Automatic
+
+	column chave_acesso
+		dataType: string
+		lineageTag: 58463b19-e1bb-49cf-aa03-b6e445426810
+		summarizeBy: none
+		sourceColumn: chave_acesso
+
+		annotation SummarizationSetBy = Automatic
+
+	column numero_nota
+		dataType: int64
+		formatString: 0
+		lineageTag: 209e2040-a91d-4a82-bd97-56a786c31824
+		summarizeBy: sum
+		sourceColumn: numero_nota
+
+		annotation SummarizationSetBy = Automatic
+
+	column numero_item
+		dataType: int64
+		formatString: 0
+		lineageTag: 9feb8bbf-f680-4b42-8919-30f99101e20e
+		summarizeBy: sum
+		sourceColumn: numero_item
+
+		annotation SummarizationSetBy = Automatic
+
+	column cfop
+		dataType: int64
+		formatString: 0
+		lineageTag: 305eef4e-33b5-4013-902e-3185a626e894
+		summarizeBy: none
+		sourceColumn: cfop
+
+		annotation SummarizationSetBy = Automatic
+
+	column valor_unitario
+		dataType: double
+		lineageTag: a607754b-6b12-46c9-9f63-3fae42686c74
+		summarizeBy: sum
+		sourceColumn: valor_unitario
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column quantidade
+		dataType: int64
+		formatString: 0
+		lineageTag: 729d74fa-5a2e-4bd2-9500-100624c320f5
+		summarizeBy: sum
+		sourceColumn: quantidade
+
+		annotation SummarizationSetBy = Automatic
+
+	column valor_desconto
+		dataType: double
+		lineageTag: caa29522-bd55-431b-9ad9-e060be2aaf11
+		summarizeBy: sum
+		sourceColumn: valor_desconto
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column valor_frete
+		dataType: double
+		lineageTag: c8147bda-0c03-4739-be31-c523ccfea906
+		summarizeBy: sum
+		sourceColumn: valor_frete
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column valor_total_item
+		dataType: double
+		lineageTag: 040284a5-4846-4ea8-b206-c459ba9abf7a
+		summarizeBy: sum
+		sourceColumn: valor_total_item
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column fl_excluido
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 323f3c11-f2ae-4a0b-b4a2-d33c07be4348
+		summarizeBy: none
+		sourceColumn: fl_excluido
+
+		annotation SummarizationSetBy = Automatic
+
+	column dh_exclusao
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 6e65aebb-4ddc-4959-818a-59fa7e611fd1
+		summarizeBy: none
+		sourceColumn: dh_exclusao
+
+		variation Variation
+			isDefault
+			relationship: 6766d51d-3088-496f-8935-98118d95f1c9
+			defaultHierarchy: LocalDateTable_837eb216-a1d9-4ecb-a6d6-dd2d0562e83d.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column dh_processamento_gold
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 70038b85-fb16-4eb8-a87e-0323c22f2b82
+		summarizeBy: none
+		sourceColumn: dh_processamento_gold
+
+		variation Variation
+			isDefault
+			relationship: 6ee86c15-0b48-4fcf-b141-60ca5251a173
+			defaultHierarchy: LocalDateTable_43c953f8-1c0b-490a-a5f3-b5f2db64fe49.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column usuario_executor
+		dataType: string
+		lineageTag: d0e6eb7a-742f-4962-994b-a47660bb7806
+		summarizeBy: none
+		sourceColumn: usuario_executor
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fato_faturamento = m
+		mode: import
+		source =
+				let
+				    Fonte = Databricks.Catalogs("adb-7405612202710045.5.azuredatabricks.net", "/sql/1.0/warehouses/ef38fcac5564a917", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    sales_prod_Database = Fonte{[Name="sales_prod",Kind="Database"]}[Data],
+				    gold_Schema = sales_prod_Database{[Name="gold",Kind="Schema"]}[Data],
+				    fato_faturamento_Table = gold_Schema{[Name="fato_faturamento",Kind="Table"]}[Data]
+				in
+				    fato_faturamento_Table
+
+	annotation PBI_ResultType = Table
+

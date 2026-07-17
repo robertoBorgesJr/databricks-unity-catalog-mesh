@@ -1,0 +1,41 @@
+relationship 6766d51d-3088-496f-8935-98118d95f1c9
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_faturamento.dh_exclusao
+	toColumn: LocalDateTable_837eb216-a1d9-4ecb-a6d6-dd2d0562e83d.Date
+
+relationship 6ee86c15-0b48-4fcf-b141-60ca5251a173
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_faturamento.dh_processamento_gold
+	toColumn: LocalDateTable_43c953f8-1c0b-490a-a5f3-b5f2db64fe49.Date
+
+relationship 533a3133-c0ab-435f-8637-9d8264229f8c
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_produtos.dh_processamento_gold
+	toColumn: LocalDateTable_5842d4bf-eee8-4589-a73b-a13c9a8374d9.Date
+
+relationship fce953b5-956c-4432-9a0c-09e957b9dc4d
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_clientes.dh_processamento_gold
+	toColumn: LocalDateTable_06cf01d2-86c6-467c-a617-f830308813a7.Date
+
+relationship 2625bfc4-17ab-4f96-a939-78eb71ba74dc
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_cfop.dh_processamento_gold
+	toColumn: LocalDateTable_9c14d399-f5a0-4b40-b9b6-ccb6afd1b614.Date
+
+relationship AutoDetected_865c00e2-badb-4855-b640-2e4e8ade61e8
+	fromColumn: fato_faturamento.sk_produto
+	toColumn: dim_produtos.sk_produto
+
+relationship AutoDetected_829b95f1-f242-42cd-9de4-b312a11c8728
+	fromColumn: fato_faturamento.sk_cliente
+	toColumn: dim_clientes.sk_cliente
+
+relationship AutoDetected_efb8a41c-e2ed-4764-8b89-43185386f904
+	fromColumn: fato_faturamento.sk_tempo
+	toColumn: dim_tempo.sk_tempo
+
+relationship 187ddda0-7fbc-ff5f-ad2d-1056b2657fc9
+	fromColumn: fato_faturamento.cfop
+	toColumn: dim_cfop.cfop_codigo
+

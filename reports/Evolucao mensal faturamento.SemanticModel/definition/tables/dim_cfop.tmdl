@@ -1,0 +1,139 @@
+table dim_cfop
+	lineageTag: ed035579-b55c-4776-b881-aff7ff74b846
+
+	column cfop_codigo
+		dataType: int64
+		formatString: 0
+		lineageTag: 3f4c55d0-0e38-4132-b6ba-533b028f3134
+		summarizeBy: none
+		sourceColumn: cfop_codigo
+
+		annotation SummarizationSetBy = Automatic
+
+	column cfop_nome_amigavel
+		dataType: string
+		lineageTag: 634627ef-a703-418b-8caf-851ffe5d041a
+		summarizeBy: none
+		sourceColumn: cfop_nome_amigavel
+
+		annotation SummarizationSetBy = Automatic
+
+	column cfop_natureza
+		dataType: string
+		lineageTag: 92781c43-04b2-4d89-b973-d1edc3fb0dc3
+		summarizeBy: none
+		sourceColumn: cfop_natureza
+
+		annotation SummarizationSetBy = Automatic
+
+	column cfop_escopo
+		dataType: string
+		lineageTag: df2e7d92-71ee-4710-a54d-4c541c33a643
+		summarizeBy: none
+		sourceColumn: cfop_escopo
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_faturamento_bruto
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 0bf591c3-faeb-40db-8455-47b954905476
+		summarizeBy: none
+		sourceColumn: is_faturamento_bruto
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_deducao_faturamento
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 430d32bd-cdc4-44ce-aebd-a74b330f5d6b
+		summarizeBy: none
+		sourceColumn: is_deducao_faturamento
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_faturamento_liquido
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ab31e9de-f6af-416a-8fd4-4f8b0cc32376
+		summarizeBy: none
+		sourceColumn: is_faturamento_liquido
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_entrada
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: e64c013e-77ae-44de-9530-8f6e0f83313d
+		summarizeBy: none
+		sourceColumn: is_entrada
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_saida
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 4b98139e-5be0-4199-b1ab-a73201c64461
+		summarizeBy: none
+		sourceColumn: is_saida
+
+		annotation SummarizationSetBy = Automatic
+
+	column dh_processamento_gold
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: c159cbf7-3cb8-4c98-b201-5b66fa4970f5
+		summarizeBy: none
+		sourceColumn: dh_processamento_gold
+
+		variation Variation
+			isDefault
+			relationship: 2625bfc4-17ab-4f96-a939-78eb71ba74dc
+			defaultHierarchy: LocalDateTable_9c14d399-f5a0-4b40-b9b6-ccb6afd1b614.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column Tipo_Operacao =
+			
+			SWITCH(
+			    TRUE(),
+			    -- Lista de CFOPs comuns de devolução/anulação
+			    dim_cfop[cfop_codigo] IN {1201, 1202, 2201, 2202, 5201, 5202, 6201, 6202}, "Devoluções / Deduções",
+			    -- Remessas e Bonificações que não geram receita financeira real
+			    dim_cfop[cfop_codigo] IN {5910, 6910, 5911, 6911}, "Bonificação / Brinde",
+			    -- Padrão para vendas comerciais
+			    "Faturamento de Vendas" )
+		lineageTag: 29d605cf-eda0-4c5d-947d-98d28669c171
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column Tipo_Mercado =
+			
+			VAR PrimeiroDigito = LEFT(FORMAT(dim_cfop[cfop_codigo], "0"), 1)
+			RETURN
+			    SWITCH(
+			        PrimeiroDigito,
+			        "5", "Mercado Interno (Estadual)",
+			        "6", "Mercado Externo (Interestadual)",
+			        "7", "Exportação",
+			        "Outros"
+			    )
+		lineageTag: 05cc27e7-2632-44ce-869a-88cf89e4baf7
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_cfop = m
+		mode: import
+		source =
+				let
+				    Fonte = Databricks.Catalogs("adb-7405612202710045.5.azuredatabricks.net", "/sql/1.0/warehouses/ef38fcac5564a917", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    sales_prod_Database = Fonte{[Name="sales_prod",Kind="Database"]}[Data],
+				    gold_Schema = sales_prod_Database{[Name="gold",Kind="Schema"]}[Data],
+				    dim_cfop_Table = gold_Schema{[Name="dim_cfop",Kind="Table"]}[Data]
+				in
+				    dim_cfop_Table
+
+	annotation PBI_ResultType = Table
+
