@@ -89,6 +89,7 @@ df_transporte_transformado = (df_transporte_dedup
         F.col("chave_acesso").cast("string"),
         F.col("numero_nota").cast("long"),
         F.trim(F.col("transportadora_id")).alias("transportadora_id"),
+        F.regexp_replace(F.col("transportadora_id"), "CNPJ_TRANS_", "").alias("transportadora_cnpj"),
         F.when(F.col("modalidade_frete") == "0", "CIF")
         .when(F.col("modalidade_frete") == "1", "FOB")
         .otherwise("OUTROS").alias("modalidade_frete"),

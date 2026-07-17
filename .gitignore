@@ -14,3 +14,6 @@
 
 # arquivos pytest
 .pytest_cache/
+
+# arquivos sandbox
+sandbox/

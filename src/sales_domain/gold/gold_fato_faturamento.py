@@ -115,7 +115,7 @@ else:
         .format("delta")
         .mode("overwrite")
         .option("mergeSchema", "true")
-        .clusterby("sk_tempo", "sk_produto", "sk_cliente)
+        .clusterBy("sk_tempo", "sk_produto", "sk_cliente")
         .saveAsTable(GOLD_TABLE)
     )
     print("Carga inicial completa executada com sucesso.")
