@@ -12,9 +12,11 @@ from pyspark.sql import functions as F
 
 # Configuração de auditoria
 current_user = spark.sql("SELECT current_user()").collect()[0][0]
+GOLD_TABLE_DIM = "sales_prod.gold.dim_clientes"
+SILVER_TABLE_SOURCE = "sales_prod.silver.faturamento_nota_cabecalho"
 
 # Leitura da tabela de cabeçalho da Silver (onde estão os dados cadastrais)
-df_cabecalho_silver = spark.read.table("sales_prod.silver.faturamento_nota_cabecalho")
+df_cabecalho_silver = spark.read.table(SILVER_TABLE_SOURCE)
 
 df_dim_clientes = (
     df_cabecalho_silver
@@ -47,7 +49,7 @@ df_dim_clientes = (
     .mode("overwrite")
     .clusterBy("sk_cliente", "uf_cliente")
     .option("mergeSchema", "true")
-    .saveAsTable("sales_prod.gold.dim_clientes")
+    .saveAsTable(GOLD_TABLE_DIM)
 )
 
 print("Dimensão de Clientes gerada e otimizada com sucesso na Gold!")
