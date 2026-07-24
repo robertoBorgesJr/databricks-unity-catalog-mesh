@@ -7,18 +7,18 @@
 from pyspark.sql import functions as F
 from pyspark.sql.types import IntegerType
 from delta.tables import DeltaTable
+from utils.connections import get_spark_session
+from utils.watermark_control import get_watermark, update_watermark
+
+spark = get_spark_session("SALES")
 
 # Configuração de auditoria
 current_user = spark.sql("SELECT current_user()").collect()[0][0]
 GOLD_TABLE = "sales_prod.gold.fato_faturamento"
+NOME_PIPELINE = GOLD_TABLE
 
 # --- [1. LEITURA DO WATERMARK (CARGA INCREMENTAL)] ---
-try:
-    watermark = spark.sql(f"SELECT MAX(dh_processamento_gold) FROM {GOLD_TABLE}").collect()[0][0]
-    print(f"Carga incremental — watermark: {watermark}")
-except Exception:
-    watermark = None
-    print("Tabela ainda não existe — executando carga inicial completa.")
+watermark = get_watermark(spark=spark, nome_pipeline=NOME_PIPELINE)
 
 # --- [2. LEITURA DOS DADOS REFINADOS DA CAMADA SILVER] ---
 df_cabecalho = spark.read.table("sales_prod.silver.faturamento_nota_cabecalho")
@@ -115,9 +115,20 @@ else:
         .format("delta")
         .mode("overwrite")
         .option("mergeSchema", "true")
-        .clusterby("sk_tempo", "sk_produto", "sk_cliente)
+        .clusterBy("sk_tempo", "sk_produto", "sk_cliente")  # Otimização de performance
         .saveAsTable(GOLD_TABLE)
     )
     print("Carga inicial completa executada com sucesso.")
+
+# -- [7. ATUALIZAÇÃO DO WATERMARK] ---
+novo_watermark = df_fato_incremental.select(F.max("dh_processamento_gold")).collect()[0][0]
+if novo_watermark:
+    update_watermark(
+        spark=spark,
+        nome_pipeline=NOME_PIPELINE,
+        novo_watermark=novo_watermark,
+        usuario_executor=current_user,
+        qtd_registros_processados=df_fato_incremental.count(),
+    )
 
 print("Tabela Fato (fato_faturamento) gerada, auditada e otimizada com sucesso na Gold!")
