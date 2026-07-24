@@ -16,14 +16,14 @@ alteração de schema nem lógica própria de leitura/escrita de watermark.
 
 Uso esperado (dentro de um notebook de dimensão):
 
-    from watermark_control import ler_watermark, atualizar_watermark
+    from watermark_control import get_watermark, update_watermark
 
     CTRL_WATERMARK_PIPELINES = "marketing_prod.controle.watermark_pipelines"
     NOME_PIPELINE = "gold_dim_campanha"
 
-    watermark = ler_watermark(spark, CTRL_WATERMARK_PIPELINES, NOME_PIPELINE)
+    watermark = get_watermark(spark, NOME_PIPELINE, CTRL_WATERMARK_PIPELINES)
     ...
-    atualizar_watermark(
+    update_watermark(
         spark=spark,
         tabela_controle=CTRL_WATERMARK_PIPELINES,
         nome_pipeline=NOME_PIPELINE,
