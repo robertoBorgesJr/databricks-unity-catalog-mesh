@@ -6,6 +6,9 @@
 # DBTITLE 1,Cell 1
 from pyspark.sql import functions as F
 from pyspark.sql.types import IntegerType, StringType, BooleanType, TimestampType
+from utils.connections import get_spark_session
+
+spark = get_spark_session("SALES")
 
 # ==============================================================================
 # 1. PARAMETRIZAÇÃO E LEITURA
