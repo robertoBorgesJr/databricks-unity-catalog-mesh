@@ -3,16 +3,13 @@
 # [tool.databricks.environment]
 # environment_version = "5"
 # ///
-# DBTITLE 1,Import watermark_control
-# MAGIC %run ../../../utils/watermark_control
-
-# COMMAND ----------
-
-# DBTITLE 1,Cell 1
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 from delta.tables import DeltaTable
+from utils.connections import get_spark_session
+from utils.watermark_control import get_watermark, update_watermark
 
+spark = get_spark_session("MARKETING")
 current_user = spark.sql("SELECT current_user()").collect()[0][0]
 
 SILVER_INVESTIMENTO = "marketing_prod.silver.investimento_marketing"
