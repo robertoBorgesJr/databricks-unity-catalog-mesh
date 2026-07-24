@@ -7,6 +7,9 @@
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 from delta.tables import DeltaTable
+from utils.connections import get_spark_session
+
+spark = get_spark_session("MARKETING")
 
 BRONZE_INVESTIMENTO = "marketing_prod.bronze.investimento_marketing"
 SILVER_INVESTIMENTO = "marketing_prod.silver.investimento_marketing"
