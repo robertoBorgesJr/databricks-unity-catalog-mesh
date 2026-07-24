@@ -7,6 +7,9 @@
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 from delta.tables import DeltaTable
+from utils.connections import get_spark_session
+
+spark = get_spark_session("SALES")
 
 current_user = spark.sql("SELECT current_user()").collect()[0][0]
 

@@ -8,6 +8,9 @@ from pyspark.sql import functions as F
 from pyspark.sql.types import StructType, StructField, StringType, LongType, IntegerType, DoubleType, DateType
 import random
 from datetime import datetime, timedelta
+from utils.connections import get_spark_session
+
+spark = get_spark_session("SALES")
 
 # Simulação de dados
 num_notas = 1000
