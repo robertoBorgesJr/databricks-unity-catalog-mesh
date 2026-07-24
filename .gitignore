@@ -28,3 +28,18 @@ sandbox/
 
 # caso utilize alguma ligação local a teste por arquivo que não queira subir
 *.log
+
+# Ignorar arquivos de ambiente virtual do Python
+.venv/
+
+# arquivos de configuração do VS Code
+.vscode/
+
+# Ignorar arquivos compactados
+*.zip
+
+# Ignorar arquivos pycache
+__pycache__/
+
+# Ignorar arquivos egg-info
+*egg-info/
