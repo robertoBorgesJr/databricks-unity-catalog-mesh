@@ -1,6 +1,29 @@
 import argparse
 import os
 
+ 
+def _is_running_on_databricks() -> bool:
+    """
+    Detecta se o código está executando nativamente dentro de um cluster
+    Databricks (notebook ou job) — variável definida automaticamente pelo
+    próprio runtime, ausente em execução local.
+    """
+    return "DATABRICKS_RUNTIME_VERSION" in os.environ
+ 
+ 
+def _get_dbutils():
+    """
+    Recupera o objeto 'dbutils' já injetado no namespace do notebook em
+    execução, sem precisar importá-lo diretamente (o que falharia fora do
+    contexto de notebook). Retorna None se não for encontrado (execução
+    local, ou dbutils indisponível por qualquer motivo).
+    """
+    try:
+        import IPython
+        return IPython.get_ipython().user_ns["dbutils"]
+    except Exception:
+        return None
+ 
 def get_environment(default: str = "prod") -> str:
     """
     Resolve o ambiente (prefixo do catalogo: 'prod' ou 'dev') a ser usado
@@ -24,5 +47,18 @@ def get_environment(default: str = "prod") -> str:
 
     if args.environment:
         return args.environment
+    
+    if _is_running_on_databricks():
+        dbutils = _get_dbutils()
+        if dbutils is not None:
+            try:
+                valor = dbutils.widgets.get("environment")
+                if valor:
+                    return valor
+            except Exception:
+               # Widget 'environment' não existe nesta execução
+                # (ex: rodando notebook manualmente sem parâmetro) -- segue
+                # para os próximos fallbacks normalmente.
+                pass                
 
     return os.environ.get("ENVIRONMENT", default)

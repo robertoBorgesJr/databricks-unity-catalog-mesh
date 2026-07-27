@@ -1,0 +1,39 @@
+bundle:
+  name: databricks-datamesh-infra
+
+artifacts:
+  utils_package:
+    type: whl
+    build: pip wheel . --no-deps -w dist
+    path: .
+
+include:
+  - resources/*.yml
+
+variables:
+  environment:
+    description: "Ambiente de execucao dos pipelines: 'dev' ou 'prod'"
+    default: "prod"
+  marketing_cluster_id:
+    description: "Cluster ID do domínio de marketing (compartilhado entre prod/dev)"
+    default: "0717-150801-eymix0qo"
+  sales_cluster_id:
+    description: "Cluster ID do domínio de vendas (compartilhado entre prod/dev)"
+    default: "0707-190232-2knpraps"
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://adb-7405612202710045.5.azuredatabricks.net
+    variables:
+      environment: dev
+
+  prod:
+    mode: production
+    workspace:
+      host: https://adb-7405612202710045.5.azuredatabricks.net
+      root_path: /Shared/.bundle/databricks-datamesh-infra/${bundle.target}
+    variables:
+      environment: prod
