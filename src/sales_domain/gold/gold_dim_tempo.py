@@ -81,7 +81,7 @@ df_dim_tempo = (
     df_dim_tempo.write
     .format("delta")
     .mode("overwrite")
-    .clusterby("ano", "mes")
+    .clusterBy("ano", "mes")
     .option("mergeSchema", "true")
     .saveAsTable(GOLD_DIM_TEMPO)
 )

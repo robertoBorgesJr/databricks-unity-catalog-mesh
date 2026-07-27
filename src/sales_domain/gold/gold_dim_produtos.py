@@ -4,7 +4,6 @@
 # environment_version = "5"
 # ///
 # DBTITLE 1,Cell 1
-from delta.connect import DeltaTable
 from delta import DeltaTable
 from pyspark.sql import functions as F
 from utils.connections import get_spark_session
@@ -32,8 +31,9 @@ watermark = get_watermark(spark=spark, nome_pipeline=PIPELINE_NAME)
 # =====================================================================
 # 3. LEITURA DOS DADOS DA CAMADA SILVER
 # =====================================================================
+df_itens_silver = spark.read.table(SILVER_TABLE)
 if watermark:
-    df_itens_silver = spark.read.table(SILVER_TABLE).filter(F.col("dh_processamento_silver") > watermark)
+    df_itens_silver = df_itens_silver.filter(F.col("dh_processamento_silver") > watermark)
 
 max_silver_timestamp = df_itens_silver.select(F.max("dh_processamento_silver")).collect()[0][0]    
 
