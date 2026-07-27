@@ -9,8 +9,15 @@ from pyspark.sql.types import StructType, StructField, StringType, LongType, Int
 import random
 from datetime import datetime, timedelta
 from utils.connections import get_spark_session
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("SALES")
+
+BRONZE_FATURAMENTO_NOTA_CABECALHO = f"sales_{environment}.bronze.faturamento_nota_cabecalho"
+BRONZE_FATURAMENTO_NOTA_ITENS = f"sales_{environment}.bronze.faturamento_nota_itens" 
+BRONZE_FATURAMENTO_NOTA_ITENS_IMPOSTOS = f"sales_{environment}.bronze.faturamento_nota_itens_impostos"
+BRONZE_FATURAMENTO_NOTA_TRANSPORTE = f"sales_{environment}.bronze.faturamento_nota_transporte"
 
 # Simulação de dados
 num_notas = 1000
@@ -123,9 +130,9 @@ df_transporte_bronze = (df_transporte_raw
 )
 
 # Persistência na camada Bronze
-df_cabecalho_bronze.write.format("delta").mode("append").saveAsTable("sales_prod.bronze.faturamento_nota_cabecalho")
-df_itens_bronze.write.format("delta").mode("append").saveAsTable("sales_prod.bronze.faturamento_nota_itens")
-df_impostos_bronze.write.format("delta").mode("append").saveAsTable("sales_prod.bronze.faturamento_nota_itens_impostos") 
-df_transporte_bronze.write.format("delta").mode("append").saveAsTable("sales_prod.bronze.faturamento_nota_transporte")
+df_cabecalho_bronze.write.format("delta").mode("append").saveAsTable(BRONZE_FATURAMENTO_NOTA_CABECALHO)
+df_itens_bronze.write.format("delta").mode("append").saveAsTable(BRONZE_FATURAMENTO_NOTA_ITENS)
+df_impostos_bronze.write.format("delta").mode("append").saveAsTable(BRONZE_FATURAMENTO_NOTA_ITENS_IMPOSTOS) 
+df_transporte_bronze.write.format("delta").mode("append").saveAsTable(BRONZE_FATURAMENTO_NOTA_TRANSPORTE)
 
 print("Camada Bronze carregada com sucesso!")

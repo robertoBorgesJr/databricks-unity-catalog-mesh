@@ -9,15 +9,17 @@ from delta import DeltaTable
 from pyspark.sql import functions as F
 from utils.connections import get_spark_session
 from utils.watermark_control import get_watermark, update_watermark
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("SALES")
 
 # =====================================================================
 # 1. CONFIGURAÇÃO E NOMENCLATURA DE TABELAS
 # =====================================================================
-SILVER_TABLE = "sales_prod.silver.faturamento_nota_itens"
-GOLD_TABLE = "sales_prod.gold.dim_produtos"
-PIPELINE_NAME = GOLD_TABLE
+SILVER_TABLE = f"sales_{environment}.silver.faturamento_nota_itens"
+GOLD_DIM_PRODUTOS = f"sales_{environment}.gold.dim_produtos"
+PIPELINE_NAME = GOLD_DIM_PRODUTOS
 
 # Configuração de auditoria
 current_user = spark.sql("SELECT current_user()").collect()[0][0]
@@ -63,17 +65,17 @@ if max_silver_timestamp is not None and df_dim_produtos.count() > 0:
     records_processed = df_dim_produtos.count()
 
     # Cria a tabela de destino caso ainda não exista
-    if not spark.catalog.tableExists(GOLD_TABLE):
+    if not spark.catalog.tableExists(GOLD_DIM_PRODUTOS):
         (
             df_dim_produtos.write
             .format("delta")
             .mode("overwrite")
             .clusterBy("sk_produto", "categoria_produto") # Liquid Clustering para performance de Join
-            .saveAsTable(GOLD_TABLE)
+            .saveAsTable(GOLD_DIM_PRODUTOS)
         )
     else:
         # Operação de Upsert (MERGE) para atualização idempotente
-        delta_target = DeltaTable.forName(spark, GOLD_TABLE)
+        delta_target = DeltaTable.forName(spark, GOLD_DIM_PRODUTOS)
         (
             delta_target.alias("target")
             .merge(

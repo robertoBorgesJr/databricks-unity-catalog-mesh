@@ -7,15 +7,17 @@ from pyspark.sql import functions as F
 from delta.tables import DeltaTable
 from utils.connections import get_spark_session
 from utils.watermark_control import get_watermark, update_watermark
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("SALES")
 
 # =====================================================================
 # 1. CONFIGURAÇÃO E NOMENCLATURA DE TABELAS
 # =====================================================================
 
-GOLD_TABLE_DIM = "sales_prod.gold.dim_transportadoras"
-SILVER_TABLE_SOURCE = "sales_prod.silver.faturamento_nota_transporte"
+GOLD_TABLE_DIM = f"sales_{environment}.gold.dim_transportadoras"
+SILVER_TABLE_SOURCE = f"sales_{environment}.silver.faturamento_nota_transporte"
 PIPELINE_NAME = GOLD_TABLE_DIM
 
 # Configuração de auditoria

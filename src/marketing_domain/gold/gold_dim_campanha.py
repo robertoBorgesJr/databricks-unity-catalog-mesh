@@ -8,15 +8,19 @@ from pyspark.sql.window import Window
 from delta.tables import DeltaTable
 from utils.connections import get_spark_session
 from utils.watermark_control import get_watermark, update_watermark
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("MARKETING")
 current_user = spark.sql("SELECT current_user()").collect()[0][0]
 
-SILVER_INVESTIMENTO = "marketing_prod.silver.investimento_marketing"
-GOLD_DIM_CAMPANHA = "marketing_prod.gold.dim_campanha"
+print(f"Executando pipeline no ambiente: {environment}")
+
+SILVER_INVESTIMENTO = f"marketing_{environment}.silver.investimento_marketing"
+GOLD_DIM_CAMPANHA = f"marketing_{environment}.gold.dim_campanha"
 
 # Controle de watermark
-NOME_PIPELINE = "gold_dim_campanha"  # identifica a linha deste pipeline na tabela de controle
+NOME_PIPELINE = GOLD_DIM_CAMPANHA
 DATA_FIM_ABERTA = "9999-12-31"  # marca o registro vigente (evita NULL em dt_fim_vigencia)
 
 # ==========================================================

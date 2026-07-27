@@ -7,13 +7,15 @@
 from pyspark.sql import functions as F
 from pyspark.sql.types import *
 from utils.connections import get_spark_session
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("MARKETING")
 
 current_user = spark.sql("SELECT current_user()").collect()[0][0]
 
 # Configurações de Tabelas
-BRONZE_INVESTIMENTO = "marketing_prod.bronze.investimento_marketing"
+BRONZE_INVESTIMENTO = f"marketing_{environment}.bronze.investimento_marketing"
 
 # ==========================================
 # 1. SETUP DE CONFIGURAÇÕES E PREMISSAS MOCK

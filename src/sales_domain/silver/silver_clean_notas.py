@@ -8,17 +8,29 @@ from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 from delta.tables import DeltaTable
 from utils.connections import get_spark_session
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("SALES")
 
 current_user = spark.sql("SELECT current_user()").collect()[0][0]
 
+BRONZE_FATURAMENTO_NOTA_CABECALHO = f"sales_{environment}.bronze.faturamento_nota_cabecalho"
+BRONZE_FATURAMENTO_NOTA_ITENS = f"sales_{environment}.bronze.faturamento_nota_itens" 
+BRONZE_FATURAMENTO_NOTA_ITENS_IMPOSTOS = f"sales_{environment}.bronze.faturamento_nota_itens_impostos"
+BRONZE_FATURAMENTO_NOTA_TRANSPORTE = f"sales_{environment}.bronze.faturamento_nota_transporte"
+SILVER_TABLE_CABECALHO = f"sales_{environment}.silver.faturamento_nota_cabecalho"
+SILVER_TABLE_ITENS = f"sales_{environment}.silver.faturamento_nota_itens"
+SILVER_TABLE_IMPOSTOS = f"sales_{environment}.silver.faturamento_nota_itens_impostos"
+SILVER_TABLE_TRANSPORTE = f"sales_{environment}.silver.faturamento_nota_transporte"
+GOLD_DIM_CFOP = f"sales_{environment}.gold.dim_cfop"
+
 # Leitura dos dados da camada Bronze
-df_cabecalho_bz = spark.read.table("sales_prod.bronze.faturamento_nota_cabecalho")
-df_itens_bz = spark.read.table("sales_prod.bronze.faturamento_nota_itens")
-df_impostos_bz = spark.read.table("sales_prod.bronze.faturamento_nota_itens_impostos")
-df_transporte_bz = spark.read.table("sales_prod.bronze.faturamento_nota_transporte") 
-df_dim_cfop = spark.read.table("sales_prod.gold.dim_cfop").select("cfop_codigo") # Carrega os CFOPs válidos
+df_cabecalho_bz = spark.read.table(BRONZE_FATURAMENTO_NOTA_CABECALHO)
+df_itens_bz = spark.read.table(BRONZE_FATURAMENTO_NOTA_ITENS)
+df_impostos_bz = spark.read.table(BRONZE_FATURAMENTO_NOTA_ITENS_IMPOSTOS)
+df_transporte_bz = spark.read.table(BRONZE_FATURAMENTO_NOTA_TRANSPORTE) 
+df_dim_cfop = spark.read.table(GOLD_DIM_CFOP).select("cfop_codigo") # Carrega os CFOPs válidos
 
 # Deduplicação da origem (Pega o estado mais recente baseado no timestamp da Bronze)
 win_cabecalho = Window.partitionBy("chave_acesso").orderBy(F.col("dh_insercao_bronze").desc())
@@ -211,7 +223,6 @@ if total_transp_ruim > 0:
 # --- [ESCRITA NA CAMADA SILVER - UPSERT/MERGE (DADOS BONS)] ---
 
 # Escrita cabeçalho
-SILVER_TABLE_CABECALHO = "sales_prod.silver.faturamento_nota_cabecalho"
 if not spark.catalog.tableExists(SILVER_TABLE_CABECALHO):
     (df_cabecalho_silver.write
      .format("delta")
@@ -230,7 +241,6 @@ else:
         .execute()        
 
 # Escrita itens
-SILVER_TABLE_ITENS = "sales_prod.silver.faturamento_nota_itens"
 if not spark.catalog.tableExists(SILVER_TABLE_ITENS):
     (df_itens_silver.write
      .format("delta")
@@ -249,7 +259,6 @@ else:
         .execute()  
 
 # Escrita impostos
-SILVER_TABLE_IMPOSTOS = "sales_prod.silver.faturamento_nota_itens_impostos"
 if not spark.catalog.tableExists(SILVER_TABLE_IMPOSTOS):
     (df_impostos_silver.write
      .format("delta")
@@ -267,7 +276,6 @@ else:
         .whenNotMatchedInsert() \
         .execute()     
 
-SILVER_TABLE_TRANSPORTE = "sales_prod.silver.faturamento_nota_transporte"
 if not spark.catalog.tableExists(SILVER_TABLE_TRANSPORTE):
     (df_transporte_silver.write
      .format("delta")

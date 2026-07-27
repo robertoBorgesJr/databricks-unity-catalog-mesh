@@ -7,20 +7,25 @@ from pyspark.sql import functions as F
 from delta.tables import DeltaTable
 from utils.connections import get_spark_session
 from utils.watermark_control import get_watermark, update_watermark
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("SALES")
 
 # Configuração de auditoria e tabelas
 current_user = spark.sql("SELECT current_user()").collect()[0][0]
-GOLD_FATO_LOGISTICA = "sales_prod.gold.fato_logistica_transporte"
+
+SILVER_FATURAMENTO_NOTA_CABECALHO = f"sales_{environment}.silver.faturamento_nota_cabecalho"
+SILVER_FATURAMENTO_NOTA_TRANSPORTE = f"sales_{environment}.silver.faturamento_nota_transporte"
+GOLD_FATO_LOGISTICA = f"sales_{environment}.gold.fato_logistica_transporte"
 
 # --- [1. LEITURA DO WATERMARK (CARGA INCREMENTAL)] ---
 NOME_PIPELINE = GOLD_FATO_LOGISTICA
 watermark = get_watermark(spark=spark, nome_pipeline=NOME_PIPELINE)
 
 # --- [2. LEITURA DOS DADOS DA CAMADA SILVER] ---
-df_transporte_sil = spark.read.table("sales_prod.silver.faturamento_nota_transporte")
-df_cabecalho_sil = spark.read.table("sales_prod.silver.faturamento_nota_cabecalho")
+df_transporte_sil = spark.read.table(SILVER_FATURAMENTO_NOTA_TRANSPORTE)
+df_cabecalho_sil = spark.read.table(SILVER_FATURAMENTO_NOTA_CABECALHO)
 
 # Snapshot das chaves ativas na origem (Chave de Acesso)
 df_chaves_silver = df_transporte_sil.select("chave_acesso")

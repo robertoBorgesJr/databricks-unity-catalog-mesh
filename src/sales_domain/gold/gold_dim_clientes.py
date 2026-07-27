@@ -7,17 +7,19 @@
 from pyspark.sql import functions as F
 from utils.connections import get_spark_session
 from utils.watermark_control import get_watermark, update_watermark
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("SALES")
 
 # =====================================================================
-# 1. CONSTRUÇÃO DA DIMENSÃO CLIENTES (sales_prod.gold.dim_clientes)
+# 1. CONSTRUÇÃO DA DIMENSÃO CLIENTES (sales_{environment}.gold.dim_clientes)
 # =====================================================================
 
 # Configuração de auditoria
-GOLD_TABLE_DIM = "sales_prod.gold.dim_clientes"
-SILVER_TABLE_SOURCE = "sales_prod.silver.faturamento_nota_cabecalho"
-PIPELINE_NAME = SILVER_TABLE_SOURCE
+GOLD_DIM_CLIENTES = f"sales_{environment}.gold.dim_clientes"
+SILVER_TABLE_SOURCE = f"sales_{environment}.silver.faturamento_nota_cabecalho"
+PIPELINE_NAME = GOLD_DIM_CLIENTES
 
 current_user = spark.sql("SELECT current_user()").collect()[0][0]
 
@@ -69,16 +71,16 @@ else:
     # =====================================================================
     # 4. GRAVAÇÃO IDEMPOTENTE NA GOLD (Delta merge)
     # =====================================================================
-    if not spark.catalog.tableExists(GOLD_TABLE_DIM):
+    if not spark.catalog.tableExists(GOLD_DIM_CLIENTES):
         (
             df_dim_clientes.drop("dh_processamento_silver")
             .write.format("delta")
             .mode("overwrite")
             .clusterBy("sk_cliente", "uf_cliente")
-            .saveAsTable(GOLD_TABLE_DIM)
+            .saveAsTable(GOLD_DIM_CLIENTES)
         )
     else:
-        delta_target = DeltaTable.forName(spark, GOLD_TABLE_DIM)
+        delta_target = DeltaTable.forName(spark, GOLD_DIM_CLIENTES)
         (
             delta_target.alias("target")
             .merge(
