@@ -1,14 +1,12 @@
-# Databricks notebook source
-# /// script
-# [tool.databricks.environment]
-# environment_version = "5"
-# ///
-# DBTITLE 1,Cell 1
 from pyspark.sql import functions as F
 from pyspark.sql.types import IntegerType
 from utils.connections import get_spark_session
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("SALES")
+
+GOLD_DIM_TEMPO = f"sales_{environment}.gold.dim_tempo"
 
 # Configuração de localidade brasileira
 spark.conf.set("spark.sql.session.timeZone", "America/Sao_Paulo")
@@ -77,9 +75,9 @@ df_dim_tempo = (
     df_dim_tempo.write
     .format("delta")
     .mode("overwrite")
-    .clusterby("ano", "mes")
+    .clusterBy("ano", "mes")
     .option("mergeSchema", "true")
-    .saveAsTable("sales_prod.gold.dim_tempo")
+    .saveAsTable(GOLD_DIM_TEMPO)
 )
 
 print("Dimensão de Tempo gerada com sucesso na Gold!")

@@ -1,8 +1,9 @@
 # Descartar arquivos locais do Terraform
 .terraform/
 *.tfstate
-*.tfstate.backup
+*.tfstate.backup*
 .terraform.lock.hcl
+
 
 # Arquivos de variáveis sensíveis (onde ficam senhas e chaves)
 *.tfvars
@@ -43,3 +44,9 @@ __pycache__/
 
 # Ignorar arquivos egg-info
 *egg-info/
+
+# Ignorar pastas do bundle
+build/
+dist/
+.databricks/
+*.whl

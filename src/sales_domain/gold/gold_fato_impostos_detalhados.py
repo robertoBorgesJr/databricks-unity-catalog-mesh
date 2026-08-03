@@ -1,27 +1,28 @@
-# Databricks notebook source
-# /// script
-# [tool.databricks.environment]
-# environment_version = "5"
-# ///
 from pyspark.sql import functions as F
 from delta.tables import DeltaTable
 from utils.connections import get_spark_session
 from utils.watermark_control import get_watermark, update_watermark
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("SALES")
 
 # Configuração de auditoria e tabelas
 current_user = spark.sql("SELECT current_user()").collect()[0][0]
-GOLD_TABLE_IMPOSTOS = "sales_prod.gold.fato_impostos_detalhados"
+
+SILVER_FATURAMENTO_NOTA_CABECALHO = f"sales_{environment}.silver.faturamento_nota_cabecalho"
+SILVER_FATURAMENTO_NOTA_ITENS = f"sales_{environment}.silver.faturamento_nota_itens"
+SILVER_FATURAMENTO_NOTA_ITENS_IMPOSTOS = f"sales_{environment}.silver.faturamento_nota_itens_impostos"
+GOLD_FATO_IMPOSTOS_DETALHADOS = f"sales_{environment}.gold.fato_impostos_detalhados"
 
 # --- [1. LEITURA DO WATERMARK (CARGA INCREMENTAL)] ---
-NOME_PIPELINE = GOLD_TABLE_IMPOSTOS
+NOME_PIPELINE = GOLD_FATO_IMPOSTOS_DETALHADOS
 watermark = get_watermark(spark=spark, nome_pipeline=NOME_PIPELINE)
 
 # --- [2. LEITURA DOS DADOS DA CAMADA SILVER] ---
-df_cabecalho_sil = spark.read.table("sales_prod.silver.faturamento_nota_cabecalho")
-df_itens_sil = spark.read.table("sales_prod.silver.faturamento_nota_itens")
-df_impostos_sil = spark.read.table("sales_prod.silver.faturamento_nota_itens_impostos")
+df_cabecalho_sil = spark.read.table(SILVER_FATURAMENTO_NOTA_CABECALHO)
+df_itens_sil = spark.read.table(SILVER_FATURAMENTO_NOTA_ITENS)
+df_impostos_sil = spark.read.table(SILVER_FATURAMENTO_NOTA_ITENS_IMPOSTOS)
 
 # Snapshot completo das chaves lógicas na Silver (para controle de Soft Delete)
 # Chave primária da fato de impostos: chave_acesso + numero_item + imposto_tipo
@@ -70,8 +71,8 @@ df_impostos_incremental = (
 )
 
 # --- [4. ESCRITA DOS DADOS (MERGE OU INICIAL)] ---
-if spark.catalog.tableExists(GOLD_TABLE_IMPOSTOS):
-    delta_target = DeltaTable.forName(spark, GOLD_TABLE_IMPOSTOS)
+if spark.catalog.tableExists(GOLD_FATO_IMPOSTOS_DETALHADOS):
+    delta_target = DeltaTable.forName(spark, GOLD_FATO_IMPOSTOS_DETALHADOS)
     
     # 4.1 Upsert dos dados novos/modificados
     (delta_target.alias("gold")
@@ -121,7 +122,7 @@ else:
      .format("delta")
      .mode("overwrite")
      .clusterBy("data_emissao", "sk_cliente", "imposto_tipo")
-     .saveAsTable(GOLD_TABLE_IMPOSTOS))
+     .saveAsTable(GOLD_FATO_IMPOSTOS_DETALHADOS))
     print("Carga inicial de impostos executada com sucesso.")
 
 # --- [6. ATUALIZAÇÃO DO WATERMARK] ---

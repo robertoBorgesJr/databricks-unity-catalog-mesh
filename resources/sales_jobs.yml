@@ -1,0 +1,89 @@
+resources:
+  jobs:
+    gold_dim_tempo_job:
+      name: "gold_dim_tempo_${var.environment}"
+      tasks:
+        - task_key: dim_tempo
+          existing_cluster_id: "${var.sales_cluster_id}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_dim_tempo.py
+            parameters: ["--environment", "${var.environment}"]
+          libraries:
+            - whl: ../dist/*.whl
+
+    gold_dim_cfop_job:
+      name: "gold_dim_cfop_${var.environment}"
+      tasks:
+        - task_key: dim_cfop
+          existing_cluster_id: "${var.sales_cluster_id}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_dim_cfop.py
+            parameters: ["--environment", "${var.environment}"]
+          libraries:
+            - whl: ../dist/*.whl
+
+    gold_dim_clientes_job:
+      name: "gold_dim_clientes_${var.environment}"
+      tasks:
+        - task_key: dim_clientes
+          existing_cluster_id: "${var.sales_cluster_id}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_dim_clientes.py
+            parameters: ["--environment", "${var.environment}"]
+          libraries:
+            - whl: ../dist/*.whl
+
+    gold_dim_produtos_job:
+      name: "gold_dim_produtos_${var.environment}"
+      tasks:
+        - task_key: dim_produtos
+          existing_cluster_id: "${var.sales_cluster_id}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_dim_produtos.py
+            parameters: ["--environment", "${var.environment}"]
+          libraries:
+            - whl: ../dist/*.whl
+
+    gold_dim_transportadoras_job:
+      name: "gold_dim_transportadoras_${var.environment}"
+      tasks:
+        - task_key: dim_transportadoras
+          existing_cluster_id: "${var.sales_cluster_id}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_dim_transportadoras.py
+            parameters: ["--environment", "${var.environment}"]
+          libraries:
+            - whl: ../dist/*.whl
+
+    gold_fato_faturamento_job:
+      name: "gold_fato_faturamento_${var.environment}"
+      tasks:
+        - task_key: fato_faturamento
+          existing_cluster_id: "${var.sales_cluster_id}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_fato_faturamento.py
+            parameters: ["--environment", "${var.environment}"]
+          libraries:
+            - whl: ../dist/*.whl
+
+    gold_fato_impostos_detalhados_job:
+      name: "gold_fato_impostos_detalhados_${var.environment}"
+      tasks:
+        - task_key: fato_impostos_detalhados
+          existing_cluster_id: "${var.sales_cluster_id}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_fato_impostos_detalhados.py
+            parameters: ["--environment", "${var.environment}"]
+          libraries:
+            - whl: ../dist/*.whl
+
+    gold_fato_logistica_transporte_job:
+      name: "gold_fato_logistica_transporte_${var.environment}"
+      tasks:
+        - task_key: fato_logistica_transporte
+          existing_cluster_id: "${var.sales_cluster_id}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_fato_logistica_transporte.py
+            parameters: ["--environment", "${var.environment}"]
+          libraries:
+            - whl: ../dist/*.whl

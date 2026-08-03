@@ -1,19 +1,18 @@
-# Databricks notebook source
-# /// script
-# [tool.databricks.environment]
-# environment_version = "5"
-# ///
 from pyspark.sql import functions as F
 from delta.tables import DeltaTable
 from utils.connections import get_spark_session
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("MARKETING")
 current_user = spark.sql("SELECT current_user()").collect()[0][0]
 
-SILVER_INVESTIMENTO = "marketing_prod.silver.investimento_marketing"
-GOLD_DIM_CAMPANHA = "marketing_prod.gold.dim_campanha"
-GOLD_FATO_INVESTIMENTO = "marketing_prod.gold.fato_investimento_marketing"
-GOLD_FATO_ATRIBUICAO = "marketing_prod.gold.fato_atribuicao_conversao"
+print(f"Executando pipeline no ambiente: {environment}")
+
+SILVER_INVESTIMENTO = f"marketing_{environment}.silver.investimento_marketing"
+GOLD_DIM_CAMPANHA = f"marketing_{environment}.gold.dim_campanha"
+GOLD_FATO_INVESTIMENTO = f"marketing_{environment}.gold.fato_investimento_marketing"
+GOLD_FATO_ATRIBUICAO = f"marketing_{environment}.gold.fato_atribuicao_conversao"
 
 # 1. Carregar dados da Silver de Marketing e da Dimensão de Campanha (SCD2)
 df_silver = spark.read.table(SILVER_INVESTIMENTO)
@@ -61,9 +60,9 @@ else:
 # ==========================================================
 # 4. CROSS-JOIN COM DOMÍNIO DE VENDAS (DATA MESH COMPLIANCE)
 # ==========================================================
-# Consumindo dados refinados e autorizados do Catálogo de Vendas (sales_prod)
+# Consumindo dados refinados e autorizados do Catálogo de Vendas (sales)
 try:
-    df_clientes_vendas = spark.read.table("sales_prod.gold.dim_clientes")
+    df_clientes_vendas = spark.read.table(f"sales_{environment}.gold.dim_clientes")
 
     # Amostra de clientes que vieram do esforço de Marketing (ex: 40% fictício)
     df_clientes_marketing = df_clientes_vendas.sample(withReplacement=False, fraction=0.4, seed=45)

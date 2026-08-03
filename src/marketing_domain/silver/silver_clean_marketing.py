@@ -1,18 +1,14 @@
-# Databricks notebook source
-# /// script
-# [tool.databricks.environment]
-# environment_version = "5"
-# ///
-# DBTITLE 1,Cell 1
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 from delta.tables import DeltaTable
 from utils.connections import get_spark_session
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("MARKETING")
 
-BRONZE_INVESTIMENTO = "marketing_prod.bronze.investimento_marketing"
-SILVER_INVESTIMENTO = "marketing_prod.silver.investimento_marketing"
+BRONZE_INVESTIMENTO = f"marketing_{environment}.bronze.investimento_marketing"
+SILVER_INVESTIMENTO = f"marketing_{environment}.silver.investimento_marketing"
 
 # Ler da Bronze aplicando deduplicação inteligente (ex: mantendo o registro mais recente)
 df_bronze = spark.read.table(BRONZE_INVESTIMENTO)

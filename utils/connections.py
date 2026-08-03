@@ -1,8 +1,4 @@
 import os
-from dotenv import load_dotenv
-from databricks.connect import DatabricksSession
-
-load_dotenv()
 
 def _is_running_on_databricks() -> bool:
     """
@@ -19,11 +15,15 @@ def get_spark_session(domain: str):
     domain: 'SALES' ou 'MARKETING'
     """
     if _is_running_on_databricks():
-        # Nativo: SparkSession já está disponível no Databricks Runtime
-        return DatabricksSession.builder.getOrCreate()
+        from pyspark.sql import SparkSession
+        return SparkSession.builder.getOrCreate()
+    
+    from dotenv import load_dotenv
+    from databricks.connect import DatabricksSession
+
+    load_dotenv()
     
     prefix = domain.upper()
-
     try:
         host = os.environ[f"{prefix}_DATABRICKS_HOST"]
         token = os.environ[f"{prefix}_DATABRICKS_TOKEN"]

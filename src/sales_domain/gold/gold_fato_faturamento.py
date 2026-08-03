@@ -1,28 +1,28 @@
-# Databricks notebook source
-# /// script
-# [tool.databricks.environment]
-# environment_version = "5"
-# ///
-# DBTITLE 1,Cell 1
 from pyspark.sql import functions as F
 from pyspark.sql.types import IntegerType
 from delta.tables import DeltaTable
 from utils.connections import get_spark_session
 from utils.watermark_control import get_watermark, update_watermark
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("SALES")
 
 # Configuração de auditoria
 current_user = spark.sql("SELECT current_user()").collect()[0][0]
-GOLD_TABLE = "sales_prod.gold.fato_faturamento"
+
+SILVER_FATURAMENTO_NOTA_CABECALHO = f"sales_{environment}.silver.faturamento_nota_cabecalho"
+SILVER_FATURAMENTO_NOTA_ITENS = f"sales_{environment}.silver.faturamento_nota_itens"
+GOLD_TABLE = f"sales_{environment}.gold.fato_faturamento"
 NOME_PIPELINE = GOLD_TABLE
 
 # --- [1. LEITURA DO WATERMARK (CARGA INCREMENTAL)] ---
 watermark = get_watermark(spark=spark, nome_pipeline=NOME_PIPELINE)
+watermark = get_watermark(spark=spark, nome_pipeline=NOME_PIPELINE)
 
 # --- [2. LEITURA DOS DADOS REFINADOS DA CAMADA SILVER] ---
-df_cabecalho = spark.read.table("sales_prod.silver.faturamento_nota_cabecalho")
-df_itens = spark.read.table("sales_prod.silver.faturamento_nota_itens")
+df_cabecalho = spark.read.table(SILVER_FATURAMENTO_NOTA_CABECALHO)
+df_itens = spark.read.table(SILVER_FATURAMENTO_NOTA_ITENS)
 
 # Snapshot completo das chaves Silver (usado na detecção de soft delete)
 df_chaves_silver = df_itens.select("chave_acesso", "numero_item")
@@ -116,9 +116,21 @@ else:
         .mode("overwrite")
         .option("mergeSchema", "true")
         .clusterBy("sk_tempo", "sk_produto", "sk_cliente")  # Otimização de performance
+        .clusterBy("sk_tempo", "sk_produto", "sk_cliente")  # Otimização de performance
         .saveAsTable(GOLD_TABLE)
     )
     print("Carga inicial completa executada com sucesso.")
+
+# -- [7. ATUALIZAÇÃO DO WATERMARK] ---
+novo_watermark = df_fato_incremental.select(F.max("dh_processamento_gold")).collect()[0][0]
+if novo_watermark:
+    update_watermark(
+        spark=spark,
+        nome_pipeline=NOME_PIPELINE,
+        novo_watermark=novo_watermark,
+        usuario_executor=current_user,
+        qtd_registros_processados=df_fato_incremental.count(),
+    )
 
 # -- [7. ATUALIZAÇÃO DO WATERMARK] ---
 novo_watermark = df_fato_incremental.select(F.max("dh_processamento_gold")).collect()[0][0]

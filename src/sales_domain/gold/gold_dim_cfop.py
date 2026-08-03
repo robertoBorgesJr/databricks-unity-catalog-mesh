@@ -1,13 +1,9 @@
-# Databricks notebook source
-# /// script
-# [tool.databricks.environment]
-# environment_version = "5"
-# ///
-# DBTITLE 1,Cell 1
 from pyspark.sql import functions as F
 from pyspark.sql.types import IntegerType, StringType, BooleanType, TimestampType
 from utils.connections import get_spark_session
+from utils.environment import get_environment
 
+environment = get_environment()
 spark = get_spark_session("SALES")
 
 # ==============================================================================
@@ -15,8 +11,8 @@ spark = get_spark_session("SALES")
 # ==============================================================================
 
 # Caminho do Volume Gerenciado no Unity Catalog
-path_csv_cfop = "/Volumes/sales_prod/gold/arquivos_setup/Tabela_CFOP.csv"
-tabela_destino = "sales_prod.gold.dim_cfop"
+path_csv_cfop = f"/Volumes/sales_{environment}/gold/arquivos_setup/Tabela_CFOP.csv"
+GOLD_DIM_CFOP = f"sales_{environment}.gold.dim_cfop"
 
 # Leitura do arquivo bruto
 # Nota: Ajuste o "sep" caso seu arquivo utilize vírgula ao invés de ponto e vírgula
@@ -104,7 +100,7 @@ df_final = df_transformed.select(
     .format("delta")
     .mode("overwrite")
     .option("overwriteSchema", "true") # Garante a aplicação do schema exato da Gold
-    .saveAsTable(tabela_destino)
+    .saveAsTable(GOLD_DIM_CFOP)
 )
 
-print(f"Carga da tabela {tabela_destino} realizada com sucesso!")
+print(f"Carga da tabela {GOLD_DIM_CFOP} realizada com sucesso!")
