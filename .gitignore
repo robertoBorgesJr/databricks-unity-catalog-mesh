@@ -4,6 +4,7 @@
 *.tfstate.backup*
 .terraform.lock.hcl
 
+
 # Arquivos de variáveis sensíveis (onde ficam senhas e chaves)
 *.tfvars
 *.tfvars.json

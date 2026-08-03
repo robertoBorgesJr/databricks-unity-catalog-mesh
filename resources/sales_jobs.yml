@@ -5,10 +5,9 @@ resources:
       tasks:
         - task_key: dim_tempo
           existing_cluster_id: "${var.sales_cluster_id}"
-          notebook_task:
-            notebook_path: ../src/sales_domain/gold/gold_dim_tempo.py
-            base_parameters:
-              environment: "${var.environment}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_dim_tempo.py
+            parameters: ["--environment", "${var.environment}"]
           libraries:
             - whl: ../dist/*.whl
 
@@ -17,10 +16,9 @@ resources:
       tasks:
         - task_key: dim_cfop
           existing_cluster_id: "${var.sales_cluster_id}"
-          notebook_task:
-            notebook_path: ../src/sales_domain/gold/gold_dim_cfop.py
-            base_parameters:
-              environment: "${var.environment}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_dim_cfop.py
+            parameters: ["--environment", "${var.environment}"]
           libraries:
             - whl: ../dist/*.whl
 
@@ -29,10 +27,9 @@ resources:
       tasks:
         - task_key: dim_clientes
           existing_cluster_id: "${var.sales_cluster_id}"
-          notebook_task:
-            notebook_path: ../src/sales_domain/gold/gold_dim_clientes.py
-            base_parameters:
-              environment: "${var.environment}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_dim_clientes.py
+            parameters: ["--environment", "${var.environment}"]
           libraries:
             - whl: ../dist/*.whl
 
@@ -41,10 +38,9 @@ resources:
       tasks:
         - task_key: dim_produtos
           existing_cluster_id: "${var.sales_cluster_id}"
-          notebook_task:
-            notebook_path: ../src/sales_domain/gold/gold_dim_produtos.py
-            base_parameters:
-              environment: "${var.environment}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_dim_produtos.py
+            parameters: ["--environment", "${var.environment}"]
           libraries:
             - whl: ../dist/*.whl
 
@@ -53,10 +49,9 @@ resources:
       tasks:
         - task_key: dim_transportadoras
           existing_cluster_id: "${var.sales_cluster_id}"
-          notebook_task:
-            notebook_path: ../src/sales_domain/gold/gold_dim_transportadoras.py
-            base_parameters:
-              environment: "${var.environment}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_dim_transportadoras.py
+            parameters: ["--environment", "${var.environment}"]
           libraries:
             - whl: ../dist/*.whl
 
@@ -65,10 +60,9 @@ resources:
       tasks:
         - task_key: fato_faturamento
           existing_cluster_id: "${var.sales_cluster_id}"
-          notebook_task:
-            notebook_path: ../src/sales_domain/gold/gold_fato_faturamento.py
-            base_parameters:
-              environment: "${var.environment}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_fato_faturamento.py
+            parameters: ["--environment", "${var.environment}"]
           libraries:
             - whl: ../dist/*.whl
 
@@ -77,10 +71,9 @@ resources:
       tasks:
         - task_key: fato_impostos_detalhados
           existing_cluster_id: "${var.sales_cluster_id}"
-          notebook_task:
-            notebook_path: ../src/sales_domain/gold/gold_fato_impostos_detalhados.py
-            base_parameters:
-              environment: "${var.environment}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_fato_impostos_detalhados.py
+            parameters: ["--environment", "${var.environment}"]
           libraries:
             - whl: ../dist/*.whl
 
@@ -89,9 +82,8 @@ resources:
       tasks:
         - task_key: fato_logistica_transporte
           existing_cluster_id: "${var.sales_cluster_id}"
-          notebook_task:
-            notebook_path: ../src/sales_domain/gold/gold_fato_logistica_transporte.py
-            base_parameters:
-              environment: "${var.environment}"
+          spark_python_task:
+            python_file: ../src/sales_domain/gold/gold_fato_logistica_transporte.py
+            parameters: ["--environment", "${var.environment}"]
           libraries:
             - whl: ../dist/*.whl

@@ -5,10 +5,9 @@ resources:
       tasks:
         - task_key: dim_campanha
           existing_cluster_id: "${var.marketing_cluster_id}"
-          notebook_task:
-            notebook_path: ../src/marketing_domain/gold/gold_dim_campanha.py
-            base_parameters:
-              environment: "${var.environment}"
+          spark_python_task:
+            python_file: ../src/marketing_domain/gold/gold_dim_campanha.py
+            parameters: ["--environment", "${var.environment}"]
           libraries:
             - whl: ../dist/*.whl
 
@@ -17,9 +16,8 @@ resources:
       tasks:
         - task_key: load_marketing
           existing_cluster_id: "${var.marketing_cluster_id}"
-          notebook_task:
-            notebook_path: ../src/marketing_domain/gold/gold_load_marketing.py
-            base_parameters:
-              environment: "${var.environment}"
+          spark_python_task:
+            python_file: ../src/marketing_domain/gold/gold_load_marketing.py
+            parameters: ["--environment", "${var.environment}"]
           libraries:
             - whl: ../dist/*.whl

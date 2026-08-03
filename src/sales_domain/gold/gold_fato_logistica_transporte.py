@@ -1,8 +1,3 @@
-# Databricks notebook source
-# /// script
-# [tool.databricks.environment]
-# environment_version = "5"
-# ///
 from pyspark.sql import functions as F
 from delta.tables import DeltaTable
 from utils.connections import get_spark_session

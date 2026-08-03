@@ -1,9 +1,3 @@
-# Databricks notebook source
-# /// script
-# [tool.databricks.environment]
-# environment_version = "5"
-# ///
-# DBTITLE 1,Cell 1
 from pyspark.sql import functions as F
 from utils.connections import get_spark_session
 from utils.watermark_control import get_watermark, update_watermark
