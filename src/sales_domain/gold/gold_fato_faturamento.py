@@ -18,6 +18,7 @@ NOME_PIPELINE = GOLD_TABLE
 
 # --- [1. LEITURA DO WATERMARK (CARGA INCREMENTAL)] ---
 watermark = get_watermark(spark=spark, nome_pipeline=NOME_PIPELINE)
+watermark = get_watermark(spark=spark, nome_pipeline=NOME_PIPELINE)
 
 # --- [2. LEITURA DOS DADOS REFINADOS DA CAMADA SILVER] ---
 df_cabecalho = spark.read.table(SILVER_FATURAMENTO_NOTA_CABECALHO)
@@ -115,9 +116,21 @@ else:
         .mode("overwrite")
         .option("mergeSchema", "true")
         .clusterBy("sk_tempo", "sk_produto", "sk_cliente")  # Otimização de performance
+        .clusterBy("sk_tempo", "sk_produto", "sk_cliente")  # Otimização de performance
         .saveAsTable(GOLD_TABLE)
     )
     print("Carga inicial completa executada com sucesso.")
+
+# -- [7. ATUALIZAÇÃO DO WATERMARK] ---
+novo_watermark = df_fato_incremental.select(F.max("dh_processamento_gold")).collect()[0][0]
+if novo_watermark:
+    update_watermark(
+        spark=spark,
+        nome_pipeline=NOME_PIPELINE,
+        novo_watermark=novo_watermark,
+        usuario_executor=current_user,
+        qtd_registros_processados=df_fato_incremental.count(),
+    )
 
 # -- [7. ATUALIZAÇÃO DO WATERMARK] ---
 novo_watermark = df_fato_incremental.select(F.max("dh_processamento_gold")).collect()[0][0]

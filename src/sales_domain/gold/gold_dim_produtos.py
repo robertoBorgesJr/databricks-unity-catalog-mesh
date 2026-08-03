@@ -9,6 +9,7 @@ spark = get_spark_session("SALES")
 
 # =====================================================================
 # 1. CONFIGURAÇÃO E NOMENCLATURA DE TABELAS
+# 1. CONFIGURAÇÃO E NOMENCLATURA DE TABELAS
 # =====================================================================
 SILVER_TABLE = f"sales_{environment}.silver.faturamento_nota_itens"
 GOLD_DIM_PRODUTOS = f"sales_{environment}.gold.dim_produtos"
