@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, desenv_local]
+  push:
+    branches: [desenv_local]
+
+jobs:
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dev dependencies
+        run: pip install ruff pytest pytest-cov
+
+      - name: Lint with ruff
+        run: ruff check src/ utils/
+
+      - name: Run unit tests
+        run: pytest tests/ -v --cov=utils --cov-report=term-missing
+
+  build-and-validate:
+    name: Build Wheel & Validate Bundle
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install build tools
+        run: pip install setuptools wheel build
+
+      - name: Build wheel
+        run: pip wheel . --no-deps -w dist
+
+      - name: Verify wheel was created
+        run: ls -la dist/*.whl
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: utils-wheel
+          path: dist/*.whl
+          retention-days: 7
+
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Validate Databricks bundle (dev)
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        run: databricks bundle validate --target dev
